@@ -1,0 +1,17 @@
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\QR_key_word.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Subject.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\ManagerRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\QR_key_wordRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\SubjectRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Manager.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\VisitRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Code_word.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Visit.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\HostRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Participator.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\GroupRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\Code_wordRepository.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Host.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Application.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Entity\Party.java
+D:\GitHub\I_am_here_Server\src\main\java\com\I_am_here\Database\Repository\ParticipatorRepository.java

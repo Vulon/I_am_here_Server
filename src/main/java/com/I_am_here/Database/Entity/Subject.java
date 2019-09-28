@@ -40,14 +40,14 @@ public class Subject {
     private Set<Host> hosts;
 
     @ManyToMany
-    @JoinTable(name = "group_subject", joinColumns = @JoinColumn(name = "subject_id"),
-    inverseJoinColumns = @JoinColumn(name = "group_id"))
-    private Set<Group> groups;
+    @JoinTable(name = "party_subject", joinColumns = @JoinColumn(name = "subject_id"),
+    inverseJoinColumns = @JoinColumn(name = "party_id"))
+    private Set<Party> parties;
 
     public Subject() {
     }
 
-    public Subject(String name, Integer plan, String description, Date start_date, Date finish_date, Manager manager, Set<Host> hosts, Set<Group> groups) {
+    public Subject(String name, Integer plan, String description, Date start_date, Date finish_date, Manager manager, Set<Host> hosts, Set<Party> parties) {
         this.name = name;
         this.plan = plan;
         this.description = description;
@@ -55,7 +55,7 @@ public class Subject {
         this.finish_date = finish_date;
         this.manager = manager;
         this.hosts = hosts;
-        this.groups = groups;
+        this.parties = parties;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class Subject {
         if (finish_date != null ? !finish_date.equals(subject.finish_date) : subject.finish_date != null) return false;
         if (manager != null ? !manager.equals(subject.manager) : subject.manager != null) return false;
         if (hosts != null ? !hosts.equals(subject.hosts) : subject.hosts != null) return false;
-        return groups != null ? groups.equals(subject.groups) : subject.groups == null;
+        return parties != null ? parties.equals(subject.parties) : subject.parties == null;
 
     }
 
@@ -87,7 +87,7 @@ public class Subject {
         result = 31 * result + (finish_date != null ? finish_date.hashCode() : 0);
         result = 31 * result + (manager != null ? manager.hashCode() : 0);
         result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
-        result = 31 * result + (groups != null ? groups.hashCode() : 0);
+        result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
     }
 
@@ -155,11 +155,11 @@ public class Subject {
         this.hosts = hosts;
     }
 
-    public Set<Group> getGroups() {
-        return groups;
+    public Set<Party> getParties() {
+        return parties;
     }
 
-    public void setGroups(Set<Group> groups) {
-        this.groups = groups;
+    public void setParties(Set<Party> parties) {
+        this.parties = parties;
     }
 }

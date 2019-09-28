@@ -39,12 +39,12 @@ public class Manager {
     private Set<Host> hosts;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
-    private Set<Group> groups;
+    private Set<Party> parties;
 
     public Manager() {
     }
 
-    public Manager(String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Group> groups) {
+    public Manager(String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
@@ -53,7 +53,7 @@ public class Manager {
         this.refresh_token = refresh_token;
         this.subjects = subjects;
         this.hosts = hosts;
-        this.groups = groups;
+        this.parties = parties;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class Manager {
             return false;
         if (subjects != null ? !subjects.equals(manager.subjects) : manager.subjects != null) return false;
         if (hosts != null ? !hosts.equals(manager.hosts) : manager.hosts != null) return false;
-        return groups != null ? groups.equals(manager.groups) : manager.groups == null;
+        return parties != null ? parties.equals(manager.parties) : manager.parties == null;
 
     }
 
@@ -89,7 +89,7 @@ public class Manager {
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
         result = 31 * result + (subjects != null ? subjects.hashCode() : 0);
         result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
-        result = 31 * result + (groups != null ? groups.hashCode() : 0);
+        result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
     }
 
@@ -165,11 +165,11 @@ public class Manager {
         this.hosts = hosts;
     }
 
-    public Set<Group> getGroups() {
-        return groups;
+    public Set<Party> getParties() {
+        return parties;
     }
 
-    public void setGroups(Set<Group> groups) {
-        this.groups = groups;
+    public void setParties(Set<Party> parties) {
+        this.parties = parties;
     }
 }

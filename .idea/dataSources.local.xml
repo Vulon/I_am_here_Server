@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="i_am_here_database@localhost" uuid="da7c6ae9-912d-41da-8163-bffb9dee49ad">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="POSTGRES" exact-version="0" />
+      <secret-storage>master_key</secret-storage>
+      <user-name>i_am_here_server</user-name>
+    </data-source>
+  </component>
+</project>

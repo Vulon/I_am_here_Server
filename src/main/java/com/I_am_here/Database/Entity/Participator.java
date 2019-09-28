@@ -24,7 +24,7 @@ public class Participator {
 
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "participator")
-    private Set<String> code_words;
+    private Set<Code_word> code_words;
 
     @Column(name = "access_token")
     private String access_token;
@@ -36,14 +36,14 @@ public class Participator {
     private Set<Visit> visits;
 
     @ManyToMany
-    @JoinTable(name = "group_participator", joinColumns = @JoinColumn(name = "participator_id"),
-    inverseJoinColumns = @JoinColumn(name = "group_id"))
-    private Set<Group> groups;
+    @JoinTable(name = "party_participator", joinColumns = @JoinColumn(name = "participator_id"),
+    inverseJoinColumns = @JoinColumn(name = "party_id"))
+    private Set<Party> parties;
 
     public Participator() {
     }
 
-    public Participator(String name, String email, String phone_number, Set<String> code_words, String access_token, String refresh_token, Set<Visit> visits, Set<Group> groups) {
+    public Participator(String name, String email, String phone_number, Set<Code_word> code_words, String access_token, String refresh_token, Set<Visit> visits, Set<Party> parties) {
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
@@ -51,7 +51,7 @@ public class Participator {
         this.access_token = access_token;
         this.refresh_token = refresh_token;
         this.visits = visits;
-        this.groups = groups;
+        this.parties = parties;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class Participator {
         if (refresh_token != null ? !refresh_token.equals(that.refresh_token) : that.refresh_token != null)
             return false;
         if (visits != null ? !visits.equals(that.visits) : that.visits != null) return false;
-        return groups != null ? groups.equals(that.groups) : that.groups == null;
+        return parties != null ? parties.equals(that.parties) : that.parties == null;
 
     }
 
@@ -84,7 +84,7 @@ public class Participator {
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
         result = 31 * result + (visits != null ? visits.hashCode() : 0);
-        result = 31 * result + (groups != null ? groups.hashCode() : 0);
+        result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
     }
 
@@ -120,11 +120,11 @@ public class Participator {
         this.phone_number = phone_number;
     }
 
-    public Set<String> getCode_words() {
+    public Set<Code_word> getCode_words() {
         return code_words;
     }
 
-    public void setCode_words(Set<String> code_words) {
+    public void setCode_words(Set<Code_word> code_words) {
         this.code_words = code_words;
     }
 
@@ -152,11 +152,11 @@ public class Participator {
         this.visits = visits;
     }
 
-    public Set<Group> getGroups() {
-        return groups;
+    public Set<Party> getParties() {
+        return parties;
     }
 
-    public void setGroups(Set<Group> groups) {
-        this.groups = groups;
+    public void setParties(Set<Party> parties) {
+        this.parties = parties;
     }
 }

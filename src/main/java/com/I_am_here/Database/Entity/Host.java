@@ -13,6 +13,9 @@ public class Host {
     @Column(name = "host_id")
     private Integer host_id;
 
+    @Column(name = "host_uuid", nullable = false)
+    private String UUID;
+
     @Column(name = "name", nullable = false)
     private String name;
 

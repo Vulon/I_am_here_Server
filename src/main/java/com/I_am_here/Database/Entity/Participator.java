@@ -13,6 +13,9 @@ public class Participator {
     @Column(name = "participator_id")
     private Integer participator_id;
 
+    @Column(name = "participator_uuid", nullable = false)
+    private String UUID;
+
     @Column(name = "name", nullable = false)
     private String name;
 

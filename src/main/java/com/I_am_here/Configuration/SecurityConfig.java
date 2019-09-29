@@ -1,13 +1,17 @@
 package com.I_am_here.Configuration;
 
 
+import com.I_am_here.Security.TokenFilter;
 import com.I_am_here.Security.Token_AuthenticationProvider;
 import com.I_am_here.Services.SecretDataLoader;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -29,15 +33,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(authenticationProvider);
     }
 
+
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/manager/*").access("hasRole('ROLE_MANAGER')")
-                .antMatchers("/protected/*").access("hasRole('ROLE_MANAGER')")
-        .anyRequest().permitAll()
-        .and().formLogin().loginPage("/login.html").loginProcessingUrl("/login/auth")
+        http
+                .csrf().disable()
+                .addFilterAfter(new TokenFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                .authorizeRequests()
+                .antMatchers("/web/*").access("hasAuthority('ACCOUNT_MANAGER')")
+                .antMatchers("/protected/*").access("hasAuthority('ACCOUNT_MANAGER')")
+                .antMatchers("/app/host/*").access("hasAuthority('ACCOUNT_HOST')")
+                .antMatchers("/app/participator/*").access("hasAuthority('ACCOUNT_PARTICIPATOR')")
+        .and().formLogin().loginPage("/login.html").loginProcessingUrl("/web/auth")
                 .defaultSuccessUrl("/homepage.html",true)
-        .and().logout().logoutUrl("/login/logout").deleteCookies("JSESSIONID")
-        .and().rememberMe().key(secretDataLoader.getSpring_security_key()).tokenValiditySeconds((int)secretDataLoader.getRefreshTokenValidity());
+        .and().logout().logoutUrl("/web/logout").deleteCookies("JSESSIONID");
+        //.and().rememberMe().key(secretDataLoader.getSpring_security_key()).tokenValiditySeconds((int)secretDataLoader.getRefreshTokenValidity());
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/login.html", "/web/logout", "/app/register", "/app/login", "/web/register", "/web/login");
+
     }
 }

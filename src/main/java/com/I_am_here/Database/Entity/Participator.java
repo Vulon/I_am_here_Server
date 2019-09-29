@@ -1,12 +1,14 @@
 package com.I_am_here.Database.Entity;
 
 
+import com.I_am_here.Database.Account;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "participator")
-public class Participator {
+public class Participator implements Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -99,6 +101,8 @@ public class Participator {
         result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
     }
+
+
 
     public Integer getParticipator_id() {
         return participator_id;

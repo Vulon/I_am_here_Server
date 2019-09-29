@@ -1,12 +1,15 @@
 package com.I_am_here.Database.Entity;
 
 
+import com.I_am_here.Database.Account;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "manager")
-public class Manager {
+
+public class Manager implements Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -47,7 +50,8 @@ public class Manager {
     public Manager() {
     }
 
-    public Manager(String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
+    public Manager(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
+        this.uuid = uuid;
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
@@ -94,6 +98,15 @@ public class Manager {
         result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
         result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Integer getManager_id() {
@@ -174,5 +187,22 @@ public class Manager {
 
     public void setParties(Set<Party> parties) {
         this.parties = parties;
+    }
+
+    @Override
+    public String toString() {
+        return "Manager{" +
+                "manager_id=" + manager_id +
+                ", uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone_number='" + phone_number + '\'' +
+                ", password='" + password + '\'' +
+                ", access_token='" + access_token + '\'' +
+                ", refresh_token='" + refresh_token + '\'' +
+                ", subjects=" + subjects +
+                ", hosts=" + hosts +
+                ", parties=" + parties +
+                '}';
     }
 }

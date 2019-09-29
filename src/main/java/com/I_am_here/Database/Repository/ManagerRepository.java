@@ -10,4 +10,7 @@ public interface ManagerRepository extends JpaRepository<Manager, Integer> {
     Manager findByUuidAndPassword(String UUID, String password);
     @Query
     Manager getByUuidAndPassword(String UUID, String password);
+
+    @Query
+    Manager getByUuid(String UUID);
 }

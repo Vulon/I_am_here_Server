@@ -1,12 +1,14 @@
 package com.I_am_here.Database.Entity;
 
 
+import com.I_am_here.Database.Account;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "host")
-public class Host {
+public class Host implements Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -50,7 +52,8 @@ public class Host {
     public Host() {
     }
 
-    public Host(String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<QR_key_word> qr_key_words, Manager manager, Set<Subject> subjects) {
+    public Host(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<QR_key_word> qr_key_words, Manager manager, Set<Subject> subjects) {
+        this.uuid = uuid;
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
@@ -96,6 +99,15 @@ public class Host {
         result = 31 * result + (manager != null ? manager.hashCode() : 0);
         result = 31 * result + (subjects != null ? subjects.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Integer getHost_id() {

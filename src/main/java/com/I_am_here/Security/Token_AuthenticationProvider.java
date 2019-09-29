@@ -1,7 +1,12 @@
 package com.I_am_here.Security;
 
+import com.I_am_here.Database.Account;
+import com.I_am_here.Database.Entity.Host;
 import com.I_am_here.Database.Entity.Manager;
+import com.I_am_here.Database.Entity.Participator;
+import com.I_am_here.Database.Repository.HostRepository;
 import com.I_am_here.Database.Repository.ManagerRepository;
+import com.I_am_here.Database.Repository.ParticipatorRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -19,44 +24,73 @@ import static com.I_am_here.Configuration.SecurityConfig.MANAGER_ROLE;
 public class Token_AuthenticationProvider implements AuthenticationProvider {
 
     private ManagerRepository managerRepository;
+    private HostRepository hostRepository;
+    private ParticipatorRepository participatorRepository;
+    private TokenParser tokenParser;
 
 
-
-    public Token_AuthenticationProvider(ManagerRepository managerRepository) {
+    public Token_AuthenticationProvider(ManagerRepository managerRepository, HostRepository hostRepository, ParticipatorRepository participatorRepository, TokenParser tokenParser) {
         this.managerRepository = managerRepository;
+        this.hostRepository = hostRepository;
+        this.participatorRepository = participatorRepository;
+        this.tokenParser = tokenParser;
     }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        Access_token_AuthenticationToken tokenAuthentication = (Access_token_AuthenticationToken)authentication;
-        boolean isExpired = tokenAuthentication.isExpired();
-        String UUID = tokenAuthentication.getUUID();
-        String password = tokenAuthentication.getPassword();
-        String access_token = tokenAuthentication.getAccess_token();
+        System.out.println("Passed filters");
+        try{
+            Access_token_Authentication auth = (Access_token_Authentication)authentication;
+            String token = auth.getAccess_token();
+            Account account = findAccount(token);
+            if (account == null){
+                auth.setAuthenticated(false);
+                return auth;
+            }
+            if(!auth.getPassword().equals(account.getPassword())){
+                auth.setAuthenticated(false);
+                return auth;
+            }
+            auth.setAuthenticated(true);
+            return auth;
 
-        if(access_token == null || access_token.length() < 5){
-            throw new BadCredentialsException("Access token not found");
+        }catch (Exception e){
+            System.out.println("Cannot convert authentication to token auth");
         }
-        if(UUID.length() < 5 || password.length() < 5){
-            throw new BadCredentialsException("Password or UUID is to short");
+        try{
+            AnonymousAuthentication auth = (AnonymousAuthentication)authentication;
+            return auth;
+        }catch (Exception e){
+            System.out.println("Could not convert this authentication: " + authentication.toString());
+            authentication.setAuthenticated(false);
+            return authentication;
         }
-        if(isExpired){
-            throw new BadCredentialsException("Access token expired");
+    }
+
+
+
+    private Account findAccount(String token){
+        TokenParser.ACCOUNT type = tokenParser.getAccountType(token);
+        String password = tokenParser.getPassword(token);
+        String UUID = tokenParser.getUUID(token);
+
+        if(type == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
+            Manager manager = managerRepository.findByUuidAndPassword(UUID, password);
+            return manager;
+
+        }else if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
+            Host host  = hostRepository.findByUuidAndPassword(UUID, password);
+            return host;
+        }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+            Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
+            return participator;
+        }else{
+            return null;
         }
-        Manager manager = managerRepository.findByUuidAndPassword(UUID, password);
-        if(manager == null){
-            throw new BadCredentialsException("Account with that UUID and password was not found");
-        }
-        if(!manager.getAccess_token().equals(access_token)){
-            throw new BadCredentialsException("Access token mismatch");
-        }
-        Set<SimpleGrantedAuthority> simpleGrantedAuthorities = new HashSet<>();
-        simpleGrantedAuthorities.add(new SimpleGrantedAuthority(MANAGER_ROLE));
-        return new Access_token_AuthenticationToken(access_token, tokenAuthentication.getSimpleGrantedAuthorities(), true);
     }
 
     @Override
     public boolean supports(Class<?> aClass) {
-        return aClass.equals(Access_token_AuthenticationToken.class);
+        return aClass.equals(Access_token_Authentication.class);
     }
 }

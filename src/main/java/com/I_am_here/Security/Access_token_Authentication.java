@@ -1,17 +1,15 @@
 package com.I_am_here.Security;
 
 import com.I_am_here.Application;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 
 
-public class Access_token_AuthenticationToken implements Authentication {
+public class Access_token_Authentication implements Authentication {
     //Stores access token during session.
 
 
@@ -53,7 +51,7 @@ public class Access_token_AuthenticationToken implements Authentication {
 
 
 
-    public Access_token_AuthenticationToken(String access_token, Set<SimpleGrantedAuthority> authorities, boolean authenticated) {
+    public Access_token_Authentication(String access_token, Set<SimpleGrantedAuthority> authorities, boolean authenticated) {
         this.access_token = access_token;
         this.authorities = authorities;
         this.authenticated = authenticated;
@@ -65,6 +63,16 @@ public class Access_token_AuthenticationToken implements Authentication {
 
     public Set<SimpleGrantedAuthority> getSimpleGrantedAuthorities(){
         return authorities;
+    }
+
+    public void addManagerAuthority(){
+        authorities.add(new SimpleGrantedAuthority(TokenParser.ACCOUNT.ACCOUNT_MANAGER.name().toUpperCase()));
+    }
+    public void addHostAuthority(){
+        authorities.add(new SimpleGrantedAuthority(TokenParser.ACCOUNT.ACCOUNT_HOST.name().toUpperCase()));
+    }
+    public void addParticipatorAuthority(){
+        authorities.add(new SimpleGrantedAuthority(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name().toUpperCase()));
     }
 
     @Override
@@ -97,7 +105,7 @@ public class Access_token_AuthenticationToken implements Authentication {
     }
 
     @Deprecated
-    public Access_token_AuthenticationToken() {
+    public Access_token_Authentication() {
     }
 
     @Override
@@ -105,7 +113,7 @@ public class Access_token_AuthenticationToken implements Authentication {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Access_token_AuthenticationToken that = (Access_token_AuthenticationToken) o;
+        Access_token_Authentication that = (Access_token_Authentication) o;
 
         if (authenticated != that.authenticated) return false;
         if (!access_token.equals(that.access_token)) return false;
@@ -123,7 +131,7 @@ public class Access_token_AuthenticationToken implements Authentication {
 
     @Override
     public String toString() {
-        return "Access_token_AuthenticationToken{" +
+        return "Access_token_Authentication{" +
                 "access_token='" + access_token + '\'' +
                 ", authorities=" + authorities +
                 ", authenticated=" + authenticated +

@@ -17,6 +17,7 @@ import java.util.Date;
 public class TokenParser {
 
 
+
     private SecretDataLoader secretDataLoader;
     private Environment env;
 
@@ -25,14 +26,25 @@ public class TokenParser {
         this.env = env;
     }
 
+    public static enum ACCOUNT{
+        ACCOUNT_MANAGER,
+        ACCOUNT_HOST,
+        ACCOUNT_PARTICIPATOR
+    }
+    public static enum TYPE{
+        ACCESS,
+        REFRESH
+    }
 
-    public String CreateToken(String UUID, String password, String type, Date date){
-        String jwt = Jwts.builder().setIssuer("i_am_here_server")
+
+    public String CreateToken(String UUID, String password, TYPE type, Date date, ACCOUNT account_type){
+        String jwt = Jwts.builder()
                 .setSubject(UUID)
                 .setIssuedAt(date)
                 .setExpiration(calculateExpirationDate(date, type))
-                .claim("type", type)
-                .claim("password", password)
+                .claim("t", type)
+                .claim("p", password)
+                .claim("a", account_type)
                 .signWith(SignatureAlgorithm.HS256, getEncodedSecretKey())
                 .compact();
         return jwt;
@@ -46,7 +58,7 @@ public class TokenParser {
 
 
     public String getPassword(String token){
-        return getClaims(token).get("password", String.class);
+        return getClaims(token).get("p", String.class);
     }
 
     public String getUUID(String token){
@@ -61,8 +73,14 @@ public class TokenParser {
         return getClaims(token).getExpiration();
     }
 
-    public String getType(String token){
-        return getClaims(token).get("type", String.class);
+    public TYPE getType(String token){
+        String s = getClaims(token).get("t", String.class);
+        return TYPE.valueOf(s);
+    }
+
+    public ACCOUNT getAccountType(String token){
+        String s =  getClaims(token).get("a", String.class);
+        return ACCOUNT.valueOf(s);
     }
 
     public boolean isExpired(String token){
@@ -72,11 +90,11 @@ public class TokenParser {
         return now.after(expireDate);
     }
 
-    private Date calculateExpirationDate(Date now, String tokenType){
+    private Date calculateExpirationDate(Date now, TYPE tokenType){
         long seconds;
-        if(tokenType.equals("access")){
+        if(tokenType == TYPE.ACCESS){
             seconds = Long.parseLong(env.getProperty("access_token_life_seconds"));
-        }else if(tokenType.equals("refresh")){
+        }else if(tokenType == TYPE.REFRESH){
             seconds = Long.parseLong(env.getProperty("refresh_token_life_seconds"));
         }else{
             throw new RuntimeException("Not supported token type: " + tokenType);

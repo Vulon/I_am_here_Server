@@ -14,7 +14,7 @@ public class Host {
     private Integer host_id;
 
     @Column(name = "host_uuid", nullable = false)
-    private String UUID;
+    private String uuid;
 
     @Column(name = "name", nullable = false)
     private String name;

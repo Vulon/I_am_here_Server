@@ -1,5 +1,6 @@
 package com.I_am_here.Security;
 
+import com.I_am_here.Application;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,11 +10,11 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 
-@Component
+
 public class Access_token_AuthenticationToken implements Authentication {
     //Stores access token during session.
 
-    @Autowired
+
     private TokenParser tokenParser;
 
 
@@ -59,6 +60,7 @@ public class Access_token_AuthenticationToken implements Authentication {
         if(authorities == null){
             throw new NullPointerException();
         }
+        tokenParser = Application.tokenParser;
     }
 
     public Set<SimpleGrantedAuthority> getSimpleGrantedAuthorities(){

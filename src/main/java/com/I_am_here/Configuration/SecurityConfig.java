@@ -31,11 +31,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/manager*").access("hasRole('ROLE_MANAGER')")
-        .antMatchers("/login*").permitAll()
-        .and().formLogin().loginPage("/login/login.html")
-                .defaultSuccessUrl("/manager/homepage.html",true)
-        .and().logout().deleteCookies("JSESSIONID")
+        http.authorizeRequests()
+                .antMatchers("/manager/*").access("hasRole('ROLE_MANAGER')")
+                .antMatchers("/protected/*").access("hasRole('ROLE_MANAGER')")
+        .anyRequest().permitAll()
+        .and().formLogin().loginPage("/login.html").loginProcessingUrl("/login/auth")
+                .defaultSuccessUrl("/homepage.html",true)
+        .and().logout().logoutUrl("/login/logout").deleteCookies("JSESSIONID")
         .and().rememberMe().key(secretDataLoader.getSpring_security_key()).tokenValiditySeconds((int)secretDataLoader.getRefreshTokenValidity());
     }
 }

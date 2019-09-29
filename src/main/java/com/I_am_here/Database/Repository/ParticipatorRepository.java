@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ParticipatorRepository extends JpaRepository<Participator, Integer> {
     @Query
-    Participator findByUUIDAndPassword(String UUID, String password);
+    Participator findByUuidAndPassword(String UUID, String password);
     @Query
-    Participator getByUUIDAndPassword(String UUID, String password);
+    Participator getByUuidAndPassword(String UUID, String password);
 }

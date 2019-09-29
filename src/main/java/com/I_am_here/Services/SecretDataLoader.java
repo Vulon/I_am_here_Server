@@ -5,6 +5,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.HashMap;
 
 @Service
 public class SecretDataLoader {
@@ -15,9 +16,7 @@ public class SecretDataLoader {
         this.env = env;
     }
 
-    private String secret_key;
-
-    private String spring_security_key;
+    private HashMap<String, String> secretMap;
 
     public void saveSecretKey(){
         ClassLoader classLoader = Application.class.getClassLoader();
@@ -25,8 +24,10 @@ public class SecretDataLoader {
         try(FileOutputStream outputStream = new FileOutputStream(file)){
 
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            objectOutputStream.write("OUR OWN SECRET KEY".getBytes());
-            objectOutputStream.write("sfdkl jdklfw 24324".getBytes());
+            secretMap = new HashMap<>();
+            secretMap.put("secret_key", "OUR OWN SECRET KEY");
+            secretMap.put("spring_security_key", "sfdkl jdklfw 24324");
+            objectOutputStream.writeObject(secretMap);
 
         }catch (IOException e){
             e.printStackTrace();
@@ -49,8 +50,7 @@ public class SecretDataLoader {
         File file = new File(classLoader.getResource("data.properties").getFile());
         try(FileInputStream inputStream = new FileInputStream(file)){
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-            secret_key = (String)objectInputStream.readObject();
-            spring_security_key = (String)objectInputStream.readObject();
+            secretMap = (HashMap<String, String>) objectInputStream.readObject();
 
         }catch (IOException e){
             e.printStackTrace();
@@ -63,11 +63,11 @@ public class SecretDataLoader {
         //TODO DELETE SECRET KEY SAVING FUNCTION LATER
         loadData();
 
-        return secret_key;
+        return secretMap.get("secret_key");
     }
 
     public String getSpring_security_key(){
         loadData();
-        return spring_security_key;
+        return secretMap.get("spring_security_key");
     }
 }

@@ -14,7 +14,7 @@ public class Manager {
     private Integer manager_id;
 
     @Column(name = "manager_uuid", nullable = false)
-    private String UUID;
+    private String uuid;
 
     @Column(name = "name", nullable = false)
     private String name;

@@ -14,7 +14,7 @@ public class Participator {
     private Integer participator_id;
 
     @Column(name = "participator_uuid", nullable = false)
-    private String UUID;
+    private String uuid;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -24,6 +24,9 @@ public class Participator {
 
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phone_number;
+
+    @Column(name = "password")
+    private String password;
 
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "participator")
@@ -46,10 +49,12 @@ public class Participator {
     public Participator() {
     }
 
-    public Participator(String name, String email, String phone_number, Set<Code_word> code_words, String access_token, String refresh_token, Set<Visit> visits, Set<Party> parties) {
+    public Participator(String uuid, String name, String email, String phone_number, String password, Set<Code_word> code_words, String access_token, String refresh_token, Set<Visit> visits, Set<Party> parties) {
+        this.uuid = uuid;
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
+        this.password = password;
         this.code_words = code_words;
         this.access_token = access_token;
         this.refresh_token = refresh_token;
@@ -65,9 +70,11 @@ public class Participator {
         Participator that = (Participator) o;
 
         if (!participator_id.equals(that.participator_id)) return false;
+        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (email != null ? !email.equals(that.email) : that.email != null) return false;
         if (!phone_number.equals(that.phone_number)) return false;
+        if (password != null ? !password.equals(that.password) : that.password != null) return false;
         if (code_words != null ? !code_words.equals(that.code_words) : that.code_words != null) return false;
         if (access_token != null ? !access_token.equals(that.access_token) : that.access_token != null) return false;
         if (refresh_token != null ? !refresh_token.equals(that.refresh_token) : that.refresh_token != null)
@@ -80,9 +87,11 @@ public class Participator {
     @Override
     public int hashCode() {
         int result = participator_id.hashCode();
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + phone_number.hashCode();
+        result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (code_words != null ? code_words.hashCode() : 0);
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
@@ -97,6 +106,14 @@ public class Participator {
 
     public void setParticipator_id(Integer participator_id) {
         this.participator_id = participator_id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -121,6 +138,14 @@ public class Participator {
 
     public void setPhone_number(String phone_number) {
         this.phone_number = phone_number;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Set<Code_word> getCode_words() {

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface ManagerRepository extends JpaRepository<Manager, Integer> {
 
     @Query
-    Manager findByUUIDAndPassword(String UUID, String password);
+    Manager findByUuidAndPassword(String UUID, String password);
     @Query
-    Manager getByUUIDAndPassword(String UUID, String password);
+    Manager getByUuidAndPassword(String UUID, String password);
 }

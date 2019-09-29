@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface HostRepository extends JpaRepository<Host, Integer> {
     @Query
-    Host findByUUIDAndPassword(String UUID, String password);
+    Host findByUuidAndPassword(String UUID, String password);
     @Query
-    Host getByUUIDAndPassword(String UUID, String password);
+    Host getByUuidAndPassword(String UUID, String password);
 }

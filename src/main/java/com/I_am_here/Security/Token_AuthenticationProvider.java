@@ -43,7 +43,7 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
         if(isExpired){
             throw new BadCredentialsException("Access token expired");
         }
-        Manager manager = managerRepository.findByUUIDAndPassword(UUID, password);
+        Manager manager = managerRepository.findByUuidAndPassword(UUID, password);
         if(manager == null){
             throw new BadCredentialsException("Account with that UUID and password was not found");
         }

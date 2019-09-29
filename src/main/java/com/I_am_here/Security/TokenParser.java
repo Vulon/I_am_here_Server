@@ -37,7 +37,7 @@ public class TokenParser {
     }
 
 
-    public String CreateToken(String UUID, String password, TYPE type, Date date, ACCOUNT account_type){
+    public String createToken(String UUID, String password, TYPE type, Date date, ACCOUNT account_type){
         String jwt = Jwts.builder()
                 .setSubject(UUID)
                 .setIssuedAt(date)

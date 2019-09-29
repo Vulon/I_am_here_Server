@@ -4,13 +4,12 @@ import com.I_am_here.Database.Entity.Host;
 import com.I_am_here.Database.Entity.Manager;
 import com.I_am_here.Database.Entity.Party;
 import com.I_am_here.Database.Entity.Subject;
-import com.I_am_here.Database.Repository.HostRepository;
 import com.I_am_here.Database.Repository.ManagerRepository;
-import com.I_am_here.Database.Repository.ParticipatorRepository;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -30,11 +29,23 @@ public class WebRestController {
     }
 
     @PostMapping("/web/login")
-    @ResponseBody //TODO make web login
+    @ResponseBody
     public ResponseEntity<TokenData> login(@RequestParam String UUID, @RequestParam String password){
+        Manager manager = managerRepository.findByUuidAndPassword(UUID, password);
+        System.out.println("Entered /web/login");
+        if(manager == null){
+            System.out.println("Manager was not found");
+            return new ResponseEntity<TokenData>(new TokenData(), HttpStatus.CONFLICT);
+        }
+        String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, Date.from(Instant.now()), TokenParser.ACCOUNT.ACCOUNT_MANAGER);
+        String refresh_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.REFRESH, Date.from(Instant.now()), TokenParser.ACCOUNT.ACCOUNT_MANAGER);
+        TokenData tokenData = new TokenData(access_token, refresh_token, tokenParser.getExpitaionDate(access_token), tokenParser.getExpitaionDate(refresh_token));
+        manager.setAccess_token(access_token);
+        manager.setRefresh_token(refresh_token);
+        System.out.println("Entered /web/login, tokenData: " + tokenData.toString());
 
-        System.out.println("SOME ONE TRIES TO LOGIN! " + UUID + " " + password);
-        return null;
+        return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
+
     }
 
     @GetMapping("web/test")
@@ -56,8 +67,8 @@ public class WebRestController {
         }
         Date now = Date.from(Instant.now());
 
-        String access_token = tokenParser.CreateToken(UUID, password, TokenParser.TYPE.ACCESS, now, TokenParser.ACCOUNT.ACCOUNT_MANAGER);
-        String refresh_token = tokenParser.CreateToken(UUID, password, TokenParser.TYPE.REFRESH, now, TokenParser.ACCOUNT.ACCOUNT_MANAGER);
+        String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, now, TokenParser.ACCOUNT.ACCOUNT_MANAGER);
+        String refresh_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.REFRESH, now, TokenParser.ACCOUNT.ACCOUNT_MANAGER);
 
         manager = new Manager(UUID, name, email, phone_number, password, access_token, refresh_token,
                 new HashSet<Subject>(), new HashSet<Host>(), new HashSet<Party>());
@@ -72,8 +83,8 @@ public class WebRestController {
 
     @PostMapping("/web/logout")
     @ResponseBody
-    public ResponseEntity<String> logout(@RequestParam String UUID){
-
-        return null;
+    public ResponseEntity<String> logout(){
+        SecurityContextHolder.clearContext();
+        return new ResponseEntity<String>("Logged out", HttpStatus.OK);
     }
 }

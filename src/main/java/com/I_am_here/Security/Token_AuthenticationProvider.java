@@ -51,6 +51,10 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
                 auth.setAuthenticated(false);
                 return auth;
             }
+            if(!account.getAccess_token().equals(auth.getAccess_token())){
+                auth.setAuthenticated(false);
+                return auth;
+            }
             auth.setAuthenticated(true);
             return auth;
 

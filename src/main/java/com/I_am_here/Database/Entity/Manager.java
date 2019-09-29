@@ -41,7 +41,7 @@ public class Manager implements Account {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
     private Set<Subject> subjects;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
+    @OneToMany(mappedBy = "manager")
     private Set<Host> hosts;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")

@@ -37,14 +37,14 @@ public class WebRestController {
             System.out.println("Manager was not found");
             return new ResponseEntity<TokenData>(new TokenData(), HttpStatus.CONFLICT);
         }
-        String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, Date.from(Instant.now()), TokenParser.ACCOUNT.ACCOUNT_MANAGER);
-        String refresh_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.REFRESH, Date.from(Instant.now()), TokenParser.ACCOUNT.ACCOUNT_MANAGER);
-        TokenData tokenData = new TokenData(access_token, refresh_token, tokenParser.getExpitaionDate(access_token), tokenParser.getExpitaionDate(refresh_token));
-        manager.setAccess_token(access_token);
-        manager.setRefresh_token(refresh_token);
-        System.out.println("Entered /web/login, tokenData: " + tokenData.toString());
+        TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, Date.from(Instant.now()));
 
-        return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
+        manager.setAccess_token(data.getAccess_token());
+        manager.setRefresh_token(data.getRefresh_token());
+        managerRepository.saveAndFlush(manager);
+        System.out.println("Entered /web/login, tokenData: " + data.toString());
+
+        return new ResponseEntity<TokenData>(data, HttpStatus.OK);
 
     }
 
@@ -66,17 +66,14 @@ public class WebRestController {
             return new ResponseEntity<>(new TokenData(), HttpStatus.CONFLICT);
         }
         Date now = Date.from(Instant.now());
+        TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, now);
 
-        String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, now, TokenParser.ACCOUNT.ACCOUNT_MANAGER);
-        String refresh_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.REFRESH, now, TokenParser.ACCOUNT.ACCOUNT_MANAGER);
-
-        manager = new Manager(UUID, name, email, phone_number, password, access_token, refresh_token,
+        manager = new Manager(UUID, name, email, phone_number, password, data.getAccess_token(), data.getRefresh_token(),
                 new HashSet<Subject>(), new HashSet<Host>(), new HashSet<Party>());
         System.out.println("Saving manager + " + manager.toString());
         managerRepository.saveAndFlush(manager);
-        TokenData tokenData = new TokenData(access_token, refresh_token, tokenParser.getExpitaionDate(access_token),
-                tokenParser.getExpitaionDate(refresh_token));
-        return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
+
+        return new ResponseEntity<TokenData>(data, HttpStatus.OK);
     }
 
 

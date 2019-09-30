@@ -1,7 +1,9 @@
 package com.I_am_here.Security;
 
 
+import com.I_am_here.Database.Account;
 import com.I_am_here.Services.SecretDataLoader;
+import com.I_am_here.TransportableData.TokenData;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -53,6 +55,20 @@ public class TokenParser {
     private Claims getClaims(String token){
         return Jwts.parser().setSigningKey(getEncodedSecretKey())
                 .parseClaimsJws(token).getBody();
+    }
+
+    public TokenData createTokenData(String UUID, String password, ACCOUNT accountType, Date now){
+        String access = createToken(UUID, password, TYPE.ACCESS, now, accountType);
+        String refresh = createToken(UUID, password, TYPE.REFRESH, now, accountType);
+        TokenData tokenData = new TokenData(access, refresh, getExpitaionDate(access), getExpitaionDate(refresh));
+        return tokenData;
+    }
+
+    public TokenData getTokenData(Account account){
+        String access = account.getAccess_token();
+        String refresh = account.getRefresh_token();
+        TokenData tokenData = new TokenData(access, refresh, getExpitaionDate(access), getExpitaionDate(refresh));
+        return tokenData;
     }
 
 

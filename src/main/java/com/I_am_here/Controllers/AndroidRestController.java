@@ -35,7 +35,7 @@ public class AndroidRestController {
     public ResponseEntity<TokenData> register(
             @RequestParam String UUID,
             @RequestParam String password,
-            @RequestHeader(name = "account_type") String account_type,
+            @RequestParam(name = "account_type") String account_type,
             @RequestParam(name = "name", defaultValue = "name", required = false) String name,
             @RequestParam(name = "email", defaultValue = "", required = false) String email,
             @RequestParam(name = "phone_number", defaultValue = "", required = false) String phone_number){
@@ -43,33 +43,155 @@ public class AndroidRestController {
         TokenParser.ACCOUNT type = TokenParser.ACCOUNT.valueOf(account_type);
         Account account = getAccount(UUID, password, type);
         if(account != null){
-            return new ResponseEntity<>(new TokenData(), HttpStatus.CONFLICT);
+            return error(HttpStatus.CONFLICT);
         }
         Date now = Date.from(Instant.now());
 
         if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
-            String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, now, TokenParser.ACCOUNT.ACCOUNT_HOST);
-            String refresh_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.REFRESH, now, TokenParser.ACCOUNT.ACCOUNT_HOST);
-
-            Host host = new Host(UUID, name, email, phone_number, password, access_token, refresh_token, new HashSet<>()
+            TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
+            Host host = new Host(UUID, name, email, phone_number, password, data.getAccess_token(), data.getRefresh_token(), new HashSet<>()
             , null, new HashSet<>());
             hostRepository.saveAndFlush(host);
-            TokenData tokenData = new TokenData(access_token, refresh_token, tokenParser.getExpitaionDate(access_token),
-                    tokenParser.getExpitaionDate(refresh_token));
-            return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
+            return new ResponseEntity<TokenData>(data, HttpStatus.OK);
         }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-            String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, now, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR);
-            String refresh_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.REFRESH, now, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR);
-
+            TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
             Participator participator = new Participator(UUID, name, email, phone_number, password, new HashSet<>(),
-                    access_token, refresh_token, new HashSet<>(), new HashSet<>());
+                    data.getAccess_token(), data.getRefresh_token(), new HashSet<>(), new HashSet<>());
             participatorRepository.saveAndFlush(participator);
 
-            TokenData tokenData = new TokenData(access_token, refresh_token, tokenParser.getExpitaionDate(access_token),
-                    tokenParser.getExpitaionDate(refresh_token));
+            return new ResponseEntity<TokenData>(data, HttpStatus.OK);
+        }else{
+            return error(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/app/login")
+    public ResponseEntity<TokenData> login(
+            @RequestParam String UUID,
+            @RequestParam String password,
+            @RequestParam String account_type
+    ){
+        Date now = Date.from(Instant.now());
+        if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
+            Host host = hostRepository.findByUuidAndPassword(UUID, password);
+            if(host == null){
+                error(HttpStatus.NOT_ACCEPTABLE);
+            }
+            TokenData tokenData = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
+            host.setAccess_token(tokenData.getAccess_token());
+            host.setRefresh_token(tokenData.getRefresh_token());
+            hostRepository.saveAndFlush(host);
+            return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
+
+        }else if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name())){
+            Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
+            if(participator == null){
+                return error(HttpStatus.NOT_ACCEPTABLE);
+            }
+            TokenData tokenData = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
+            participator.setAccess_token(tokenData.getAccess_token());
+            participator.setRefresh_token(tokenData.getRefresh_token());
+            participatorRepository.saveAndFlush(participator);
             return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
         }else{
-            return new ResponseEntity<TokenData>(new TokenData(), HttpStatus.BAD_REQUEST);
+            return error(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/app/update_credentials")
+    public ResponseEntity<String> updateHostCredentials(
+            @RequestHeader String access_token,
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "email", required = false, defaultValue = "")String email,
+            @RequestParam(name = "phone_number", required = false, defaultValue = "")String phone_number
+    ){
+        try{
+            TokenParser.ACCOUNT account = tokenParser.getAccountType(access_token);
+            if(tokenParser.getType(access_token) != TokenParser.TYPE.ACCESS){
+                return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
+            }
+            String UUID = tokenParser.getUUID(access_token);
+            String password = tokenParser.getPassword(access_token);
+
+            if(account == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                Host host = hostRepository.findByUuidAndPassword(UUID, password);
+                if( host == null){
+                    return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
+                }
+                if(name.length() > 1){
+                    host.setName(name);
+                }
+                if(email.length() > 1){
+                    host.setEmail(email);
+                }
+                if(phone_number.length() > 1){
+                    host.setPhone_number(phone_number);
+                }
+                hostRepository.saveAndFlush(host);
+                return new ResponseEntity<>("Updated", HttpStatus.OK);
+            }else if(account == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
+                if(participator == null){
+                    return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
+                }
+                if(name.length() > 1){
+                    participator.setName(name);
+                }
+                if(email.length() > 1){
+                    participator.setEmail(email);
+                }
+                if(phone_number.length() > 1){
+                    participator.setPhone_number(phone_number);
+                }
+                participatorRepository.saveAndFlush(participator);
+                return new ResponseEntity<>("Updated", HttpStatus.OK);
+            }else{
+                return new ResponseEntity<String>("Wrong account type", HttpStatus.BAD_REQUEST);
+            }
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @GetMapping("/app/refresh")
+    public ResponseEntity<TokenData> updateAccessToken(
+            @RequestHeader String refresh_token
+    ){
+        try{
+            TokenParser.ACCOUNT account_type = tokenParser.getAccountType(refresh_token);
+            TokenParser.TYPE token_type = tokenParser.getType(refresh_token);
+            if(token_type != TokenParser.TYPE.REFRESH){
+                return error(HttpStatus.BAD_REQUEST);
+            }
+            String UUID = tokenParser.getUUID(refresh_token);
+            String password = tokenParser.getPassword(refresh_token);
+
+            String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, Date.from(Instant.now()), account_type);
+            if (account_type == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                Host host = hostRepository.findByUuidAndPassword(UUID, password);
+                if(host == null){
+                    return error(HttpStatus.NOT_ACCEPTABLE);
+                }
+                host.setAccess_token(access_token);
+                hostRepository.saveAndFlush(host);
+                return new ResponseEntity<>(tokenParser.getTokenData(host), HttpStatus.OK);
+            }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
+                if(participator == null){
+                    return error(HttpStatus.NOT_ACCEPTABLE);
+                }
+                participator.setAccess_token(access_token);
+                participatorRepository.saveAndFlush(participator);
+                return new ResponseEntity<>(tokenParser.getTokenData(participator), HttpStatus.OK);
+            }else{
+                return error(HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return error(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -83,6 +205,10 @@ public class AndroidRestController {
         }else{
             return null;
         }
+    }
+
+    private ResponseEntity<TokenData> error(HttpStatus status){
+        return new ResponseEntity<TokenData>(new TokenData(), status);
     }
 
 }

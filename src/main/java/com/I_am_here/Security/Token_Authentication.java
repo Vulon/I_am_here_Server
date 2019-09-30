@@ -9,7 +9,7 @@ import java.util.*;
 
 
 
-public class Access_token_Authentication implements Authentication {
+public class Token_Authentication implements Authentication {
     //Stores access token during session.
 
 
@@ -17,7 +17,7 @@ public class Access_token_Authentication implements Authentication {
 
 
 
-    private String access_token;
+    private String token;
 
     private Set<SimpleGrantedAuthority> authorities;
 
@@ -33,26 +33,34 @@ public class Access_token_Authentication implements Authentication {
         authenticated = b;
     }
 
-    public String getAccess_token(){
-        return access_token;
+    public String getToken(){
+        return token;
+    }
+
+    public TokenParser.TYPE getTokenType(){
+        return tokenParser.getType(token);
+    }
+
+    public TokenParser.ACCOUNT getTokenAccount(){
+        return tokenParser.getAccountType(token);
     }
 
     public String getPassword(){
-        return tokenParser.getPassword(access_token);
+        return tokenParser.getPassword(token);
     }
 
     public String getUUID(){
-        return tokenParser.getUUID(access_token);
+        return tokenParser.getUUID(token);
     }
 
     public boolean isExpired(){
-        return tokenParser.isExpired(access_token);
+        return tokenParser.isExpired(token);
     }
 
 
 
-    public Access_token_Authentication(String access_token, Set<SimpleGrantedAuthority> authorities, boolean authenticated) {
-        this.access_token = access_token;
+    public Token_Authentication(String token, Set<SimpleGrantedAuthority> authorities, boolean authenticated) {
+        this.token = token;
         this.authorities = authorities;
         this.authenticated = authenticated;
         if(authorities == null){
@@ -95,7 +103,7 @@ public class Access_token_Authentication implements Authentication {
     @Override
     @Deprecated //Could store additional info here
     public Object getDetails() {
-        return getAccess_token();
+        return getToken();
     }
 
     @Override
@@ -105,7 +113,7 @@ public class Access_token_Authentication implements Authentication {
     }
 
     @Deprecated
-    public Access_token_Authentication() {
+    public Token_Authentication() {
     }
 
     @Override
@@ -113,17 +121,17 @@ public class Access_token_Authentication implements Authentication {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Access_token_Authentication that = (Access_token_Authentication) o;
+        Token_Authentication that = (Token_Authentication) o;
 
         if (authenticated != that.authenticated) return false;
-        if (!access_token.equals(that.access_token)) return false;
+        if (!token.equals(that.token)) return false;
         return authorities.equals(that.authorities);
 
     }
 
     @Override
     public int hashCode() {
-        int result = access_token.hashCode();
+        int result = token.hashCode();
         result = 31 * result + authorities.hashCode();
         result = 31 * result + (authenticated ? 1 : 0);
         return result;
@@ -131,8 +139,8 @@ public class Access_token_Authentication implements Authentication {
 
     @Override
     public String toString() {
-        return "Access_token_Authentication{" +
-                "access_token='" + access_token + '\'' +
+        return "Token_Authentication{" +
+                "token='" + token + '\'' +
                 ", authorities=" + authorities +
                 ", authenticated=" + authenticated +
                 '}';

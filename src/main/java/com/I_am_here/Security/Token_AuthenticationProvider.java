@@ -8,16 +8,9 @@ import com.I_am_here.Database.Repository.HostRepository;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.ParticipatorRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static com.I_am_here.Configuration.SecurityConfig.MANAGER_ROLE;
 
 
 @Service
@@ -40,8 +33,8 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         System.out.println("Passed filters");
         try{
-            Access_token_Authentication auth = (Access_token_Authentication)authentication;
-            String token = auth.getAccess_token();
+            Token_Authentication auth = (Token_Authentication)authentication;
+            String token = auth.getToken();
             Account account = findAccount(token);
             if (account == null){
                 auth.setAuthenticated(false);
@@ -51,7 +44,11 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
                 auth.setAuthenticated(false);
                 return auth;
             }
-            if(!account.getAccess_token().equals(auth.getAccess_token())){
+            if(auth.getTokenType() == TokenParser.TYPE.ACCESS && !account.getAccess_token().equals(auth.getToken())){
+                auth.setAuthenticated(false);
+                return auth;
+            }
+            if(auth.getTokenType() == TokenParser.TYPE.REFRESH && !account.getRefresh_token().equals(auth.getToken())){
                 auth.setAuthenticated(false);
                 return auth;
             }
@@ -95,6 +92,6 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> aClass) {
-        return aClass.equals(Access_token_Authentication.class);
+        return aClass.equals(Token_Authentication.class);
     }
 }

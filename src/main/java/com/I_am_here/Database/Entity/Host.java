@@ -39,9 +39,10 @@ public class Host implements Account {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
     private Set<QR_key_word> qr_key_words;
 
-    @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private Manager manager;
+    @ManyToMany
+    @JoinTable(name = "manager_host", joinColumns =
+    @JoinColumn(name = "host_id"), inverseJoinColumns = @JoinColumn(name = "manager_id"))
+    private Set<Manager> managers;
 
 
     @ManyToMany
@@ -52,7 +53,7 @@ public class Host implements Account {
     public Host() {
     }
 
-    public Host(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<QR_key_word> qr_key_words, Manager manager, Set<Subject> subjects) {
+    public Host(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<QR_key_word> qr_key_words, Set<Manager> managers, Set<Subject> subjects) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
@@ -61,9 +62,11 @@ public class Host implements Account {
         this.access_token = access_token;
         this.refresh_token = refresh_token;
         this.qr_key_words = qr_key_words;
-        this.manager = manager;
+        this.managers = managers;
         this.subjects = subjects;
     }
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -72,33 +75,43 @@ public class Host implements Account {
 
         Host host = (Host) o;
 
-        if (!host_id.equals(host.host_id)) return false;
+        if (host_id != null ? !host_id.equals(host.host_id) : host.host_id != null) return false;
+        if (uuid != null ? !uuid.equals(host.uuid) : host.uuid != null) return false;
         if (name != null ? !name.equals(host.name) : host.name != null) return false;
         if (email != null ? !email.equals(host.email) : host.email != null) return false;
-        if (!phone_number.equals(host.phone_number)) return false;
+        if (phone_number != null ? !phone_number.equals(host.phone_number) : host.phone_number != null) return false;
         if (password != null ? !password.equals(host.password) : host.password != null) return false;
         if (access_token != null ? !access_token.equals(host.access_token) : host.access_token != null) return false;
         if (refresh_token != null ? !refresh_token.equals(host.refresh_token) : host.refresh_token != null)
             return false;
         if (qr_key_words != null ? !qr_key_words.equals(host.qr_key_words) : host.qr_key_words != null) return false;
-        if (manager != null ? !manager.equals(host.manager) : host.manager != null) return false;
+        if (managers != null ? !managers.equals(host.managers) : host.managers != null) return false;
         return subjects != null ? subjects.equals(host.subjects) : host.subjects == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = host_id.hashCode();
+        int result = host_id != null ? host_id.hashCode() : 0;
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + phone_number.hashCode();
+        result = 31 * result + (phone_number != null ? phone_number.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
         result = 31 * result + (qr_key_words != null ? qr_key_words.hashCode() : 0);
-        result = 31 * result + (manager != null ? manager.hashCode() : 0);
+        result = 31 * result + (managers != null ? managers.hashCode() : 0);
         result = 31 * result + (subjects != null ? subjects.hashCode() : 0);
         return result;
+    }
+
+    public Integer getHost_id() {
+        return host_id;
+    }
+
+    public void setHost_id(Integer host_id) {
+        this.host_id = host_id;
     }
 
     @Override
@@ -110,14 +123,7 @@ public class Host implements Account {
         this.uuid = uuid;
     }
 
-    public Integer getHost_id() {
-        return host_id;
-    }
-
-    public void setHost_id(Integer host_id) {
-        this.host_id = host_id;
-    }
-
+    @Override
     public String getName() {
         return name;
     }
@@ -126,6 +132,7 @@ public class Host implements Account {
         this.name = name;
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
@@ -134,6 +141,7 @@ public class Host implements Account {
         this.email = email;
     }
 
+    @Override
     public String getPhone_number() {
         return phone_number;
     }
@@ -142,6 +150,7 @@ public class Host implements Account {
         this.phone_number = phone_number;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -150,6 +159,7 @@ public class Host implements Account {
         this.password = password;
     }
 
+    @Override
     public String getAccess_token() {
         return access_token;
     }
@@ -158,6 +168,7 @@ public class Host implements Account {
         this.access_token = access_token;
     }
 
+    @Override
     public String getRefresh_token() {
         return refresh_token;
     }
@@ -174,12 +185,12 @@ public class Host implements Account {
         this.qr_key_words = qr_key_words;
     }
 
-    public Manager getManager() {
-        return manager;
+    public Set<Manager> getManagers() {
+        return managers;
     }
 
-    public void setManager(Manager manager) {
-        this.manager = manager;
+    public void setManagers(Set<Manager> managers) {
+        this.managers = managers;
     }
 
     public Set<Subject> getSubjects() {
@@ -188,5 +199,22 @@ public class Host implements Account {
 
     public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
+    }
+
+    @Override
+    public String toString() {
+        return "Host{" +
+                "host_id=" + host_id +
+                ", uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone_number='" + phone_number + '\'' +
+                ", password='" + password + '\'' +
+                ", access_token='" + access_token + '\'' +
+                ", refresh_token='" + refresh_token + '\'' +
+                ", qr_key_words=" + qr_key_words +
+                ", managers=" + managers +
+                ", subjects=" + subjects +
+                '}';
     }
 }

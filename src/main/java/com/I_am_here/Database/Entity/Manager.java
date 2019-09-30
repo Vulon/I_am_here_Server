@@ -41,7 +41,10 @@ public class Manager implements Account {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
     private Set<Subject> subjects;
 
-    @OneToMany(mappedBy = "manager")
+
+    @ManyToMany
+    @JoinTable(name = "manager_host", joinColumns =
+    @JoinColumn(name = "manager_id"), inverseJoinColumns = @JoinColumn(name = "host_id"))
     private Set<Host> hosts;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")

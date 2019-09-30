@@ -5,7 +5,6 @@ import com.I_am_here.Database.Repository.HostRepository;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.ParticipatorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -68,6 +67,8 @@ public class TokenFilter extends OncePerRequestFilter {
 
         String access_token = httpServletRequest.getHeader("access_token");
 
+        String refresh_token = httpServletRequest.getHeader("refresh_type");
+
         String path =  httpServletRequest.getRequestURI();
 
         boolean stop = false;
@@ -127,37 +128,67 @@ public class TokenFilter extends OncePerRequestFilter {
             }
             default:{
                 System.out.println("ENTERED Default case");
-                Access_token_Authentication authentication;
+                Token_Authentication authentication;
                 TokenParser tokenParser = Application.tokenParser;
                 try{
-                    if(access_token == null){
-                        System.err.println("Something whent wrong with access token");
-                    }
-                    if(
-                            tokenParser.isExpired(
-                                    access_token)){
-                        authentication = new Access_token_Authentication(access_token, empAuthList(), false);
+                    if(access_token != null){
+                        if(tokenParser.isExpired(access_token)){
+                            authentication = new Token_Authentication(access_token, empAuthList(), false);
+                            saveAuth(authentication);
+                            System.out.println("Expired date");
+                            break;
+                        }
+                        if(!isPathCorrect(access_token, path)){
+                            authentication = new Token_Authentication(access_token, empAuthList(), false);
+                            System.out.println("Path not correct");
+                            saveAuth(authentication);
+                            break;
+                        }
+                        authentication = new Token_Authentication(access_token, empAuthList(), true);
+                        System.out.println("Created Authentication");
+                        if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
+                            authentication.addManagerAuthority();
+                        }else if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                            authentication.addHostAuthority();
+                        }else if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                            authentication.addParticipatorAuthority();
+                        }
+                        System.out.println(authentication);
                         saveAuth(authentication);
-                        System.out.println("Expired date");
+
+                    }else if(refresh_token != null){
+                        if(tokenParser.isExpired(refresh_token)){
+                            authentication = new Token_Authentication(refresh_token, empAuthList(), false);
+                            saveAuth(authentication);
+                            System.out.println("Expired date");
+                            break;
+                        }
+                        if(!isPathCorrect(refresh_token, path)){
+                            authentication = new Token_Authentication(refresh_token, empAuthList(), false);
+                            System.out.println("Path not correct");
+                            saveAuth(authentication);
+                            break;
+                        }
+                        authentication = new Token_Authentication(refresh_token, empAuthList(), true);
+                        System.out.println("Created Authentication");
+                        if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
+                            authentication.addManagerAuthority();
+                        }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                            authentication.addHostAuthority();
+                        }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                            authentication.addParticipatorAuthority();
+                        }
+                        System.out.println(authentication);
+                        saveAuth(authentication);
+                    }else{
+                        authentication = new Token_Authentication(refresh_token, empAuthList(), false);
+                        saveAuth(authentication);
+                        System.err.println("Something went wrong with access token");
                         break;
                     }
-                    if(!isPathCorrect(access_token, path)){
-                        authentication = new Access_token_Authentication(access_token, empAuthList(), false);
-                        System.out.println("Path not correct");
-                        saveAuth(authentication);
-                        break;
-                    }
-                    authentication = new Access_token_Authentication(access_token, empAuthList(), true);
-                    System.out.println("Created Authentication");
-                    if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
-                        authentication.addManagerAuthority();
-                    }else if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
-                        authentication.addHostAuthority();
-                    }else if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-                        authentication.addParticipatorAuthority();
-                    }
-                    System.out.println(authentication);
-                    saveAuth(authentication);
+
+
+
                 }catch (Exception e){
                     e.printStackTrace();
                     SecurityContextHolder.clearContext();

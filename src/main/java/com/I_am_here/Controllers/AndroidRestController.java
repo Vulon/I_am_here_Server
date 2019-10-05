@@ -16,6 +16,12 @@ import java.util.Date;
 import java.util.HashSet;
 
 
+
+/**
+ * ServerController. Methods of this class get called when server gets requests for urls like /app/*
+ * Most of this methods can be called only if a request has a valid access token.
+ * This controller is designed to work with Host and Participator accounts.
+ */
 @RestController
 public class AndroidRestController {
 
@@ -31,6 +37,17 @@ public class AndroidRestController {
         this.tokenParser = tokenParser;
     }
 
+    /**
+     * This method creates new entry in database and returns TokenData containing new tokens.
+     * If such account already exists, server returns status code 409.
+     * If account type is wrong or misspelled, server returns status code 400
+     * @param UUID - UUID from FireBase
+     * @param password - user password
+     * @param account_type - account type (ACCOUNT_HOST, ACCOUNT_PARTICIPATOR)
+     * @param name - name. Not necessary
+     * @param email - email Not necessary
+     * @param phone_number - phone number. Not necessary
+     */
     @PostMapping("/app/register")
     public ResponseEntity<TokenData> register(
             @RequestParam String UUID,
@@ -39,7 +56,6 @@ public class AndroidRestController {
             @RequestParam(name = "name", defaultValue = "name", required = false) String name,
             @RequestParam(name = "email", defaultValue = "", required = false) String email,
             @RequestParam(name = "phone_number", defaultValue = "", required = false) String phone_number){
-
         TokenParser.ACCOUNT type = TokenParser.ACCOUNT.valueOf(account_type);
         Account account = getAccount(UUID, password, type);
         if(account != null){
@@ -75,7 +91,7 @@ public class AndroidRestController {
         if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
             Host host = hostRepository.findByUuidAndPassword(UUID, password);
             if(host == null){
-                error(HttpStatus.NOT_ACCEPTABLE);
+                error(HttpStatus.CONFLICT);
             }
             TokenData tokenData = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
             host.setAccess_token(tokenData.getAccess_token());
@@ -86,7 +102,7 @@ public class AndroidRestController {
         }else if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name())){
             Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
             if(participator == null){
-                return error(HttpStatus.NOT_ACCEPTABLE);
+                return error(HttpStatus.CONFLICT);
             }
             TokenData tokenData = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
             participator.setAccess_token(tokenData.getAccess_token());

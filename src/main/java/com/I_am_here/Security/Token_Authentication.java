@@ -8,10 +8,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.*;
 
 
-
+/**
+ * Stores user credentials during session. It generated and used by TokenFilter and Token_AuthenticationProvider
+ */
 public class Token_Authentication implements Authentication {
-    //Stores access token during session.
-
 
     private TokenParser tokenParser;
 

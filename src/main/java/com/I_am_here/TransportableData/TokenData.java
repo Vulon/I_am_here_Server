@@ -4,7 +4,24 @@ package com.I_am_here.TransportableData;
 import java.io.Serializable;
 import java.util.Date;
 
+
+/**
+ This class is used to transfer token data from server to client.
+ It is used in controllers. Controller methods often return ResponseEntity, contain
+ TokenData, HttpStatus and other data.
+ Jackson library automatically converts this objects to json format
+ like this:
+ {
+ access_token: "dfasjrh1k2h3321312",
+ refresh_token: "jgkfj3j235jkfudhw",
+ access_token_expire_date: "423218372",
+ refresh_token_expire_date: "4231348348"
+ }
+
+ */
 public class TokenData implements Serializable {
+
+
 
     private static final long serialVersionUID = -1898384066498866625L;
     private String access_token;

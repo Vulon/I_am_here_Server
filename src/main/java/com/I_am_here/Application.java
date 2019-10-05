@@ -10,6 +10,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class Application {
     public static TokenParser tokenParser;
 
+    /**
+    Application starts with this method. Spring creates context, it searches all components and creates objects for them.
+    Spring connects to database, starts server listener using tomcat.
+    Also implements some interfaces like Repositories
+    */
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         tokenParser = context.getBean(TokenParser.class);

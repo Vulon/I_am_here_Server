@@ -12,7 +12,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+import java.time.Instant;
 
+
+/**
+ * This class is used for Security. It invokes 'authenticate()', when user tries to access protected url.
+ */
 @Service
 public class Token_AuthenticationProvider implements AuthenticationProvider {
 
@@ -29,43 +35,59 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
         this.tokenParser = tokenParser;
     }
 
+    /**
+     * This method takes authentication instance. It loads account from database and checks if
+     * token from database is equal to the one in authentication.
+     * @param authentication AnonymousAuthentication or Token_Authentication instance
+     * @return verified Authentication
+     */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        System.out.println("Passed filters");
+        System.out.println("Auth Provider started at " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
         try{
             Token_Authentication auth = (Token_Authentication)authentication;
             String token = auth.getToken();
             Account account = findAccount(token);
             if (account == null){
                 auth.setAuthenticated(false);
-                return auth;
+                return finish(auth);
             }
             if(!auth.getPassword().equals(account.getPassword())){
                 auth.setAuthenticated(false);
-                return auth;
+                return finish(auth);
             }
             if(auth.getTokenType() == TokenParser.TYPE.ACCESS && !account.getAccess_token().equals(auth.getToken())){
                 auth.setAuthenticated(false);
-                return auth;
+                return finish(auth);
             }
             if(auth.getTokenType() == TokenParser.TYPE.REFRESH && !account.getRefresh_token().equals(auth.getToken())){
                 auth.setAuthenticated(false);
-                return auth;
+                return finish(auth);
             }
             auth.setAuthenticated(true);
-            return auth;
+            return finish(auth);
 
         }catch (Exception e){
             System.out.println("Cannot convert authentication to token auth");
         }
         try{
             AnonymousAuthentication auth = (AnonymousAuthentication)authentication;
-            return auth;
+            return finish(auth);
         }catch (Exception e){
             System.out.println("Could not convert this authentication: " + authentication.toString());
             authentication.setAuthenticated(false);
-            return authentication;
+            return finish(authentication);
         }
+    }
+
+    /**
+     * This method is used only for debug purpose to track time needed for processing request
+     * @param auth Authentication
+     * @return the same auth object
+     */
+    private Authentication finish(Authentication auth){
+        //System.out.println("Auth provider finished at " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
+        return auth;
     }
 
 

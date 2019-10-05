@@ -16,9 +16,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+/**
+ * Filter - used in Spring Security. Spring creates token chain, where executes filters.
+ * Filter can get access to all data, stored in a http request, cookies, session.
+ * If caller tries to access /web/login, /web/register, /web/login, /app/login, /app/register it creates AnonymousAuthentication,
+ * If user tries to access /web/* path he needs valid token for type ACCOUNT_MANAGER
+ * /app/host requires ACCOUNT_HOST
+ * /app/participator requires ACCOUNT_PARTICIPATOR
+ */
 @Component
 public class TokenFilter extends OncePerRequestFilter {
 
@@ -28,21 +38,33 @@ public class TokenFilter extends OncePerRequestFilter {
     private static Pattern web_pattern;
     private static Pattern host_pattern;
     private static Pattern participator_pattern;
+    private static Pattern refresh_pattern;
     static {
         web_pattern = Pattern.compile("/web/[a-zA-Z_]*");
         host_pattern = Pattern.compile("/app/host/[a-zA-Z_]*");
         participator_pattern = Pattern.compile("/app/participator/[a-zA-Z_]*");
+        refresh_pattern = Pattern.compile("/[a-zA-Z_]*/refresh");
     }
 
+    /**
+     * Checks if the entered token can be used to access this url path
+     * @param token Token used in authentication
+     * @param path Url path that caller tries to access
+     * @return true - if caller can access this url with that token, false otherwise
+     */
     private boolean isPathCorrect(String token, String path){
         TokenParser tokenParser = Application.tokenParser;
-        TokenParser.ACCOUNT type = tokenParser.getAccountType(token);
-        System.out.println("Checking path " + path + " for type " + type);
-        if(type == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
+        TokenParser.ACCOUNT account_type = tokenParser.getAccountType(token);
+        TokenParser.TYPE token_type = tokenParser.getType(token);
+        System.out.println("Checking path " + path + " for type " + account_type);
+        if(token_type == TokenParser.TYPE.REFRESH){
+            return refresh_pattern.matcher(path).matches();
+        }
+        if(account_type == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
             return web_pattern.matcher(path).matches();
-        }else if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
+        }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_HOST){
             return host_pattern.matcher(path).matches();
-        }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+        }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
             return participator_pattern.matcher(path).matches();
         }else{
             return false;
@@ -62,6 +84,9 @@ public class TokenFilter extends OncePerRequestFilter {
     @Autowired
     private ParticipatorRepository participatorRepository;
 
+    /**
+     * This method invokes, when filter starts filtering the request.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
@@ -70,17 +95,13 @@ public class TokenFilter extends OncePerRequestFilter {
         String refresh_token = httpServletRequest.getHeader("refresh_type");
 
         String path =  httpServletRequest.getRequestURI();
-
-        boolean stop = false;
-        System.out.println("Filtering path: " + path);
-        System.out.println("Access token: " + access_token);
+        //System.out.println("Filter start at: " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
         switch (path) {
             case "/web/login": {
                 AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGIN,
                         TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
                 saveAuth(authentication);
                 filterChain.doFilter(httpServletRequest, httpServletResponse);
-                stop = true;
                 return;
             }
             case "/web/logout": {
@@ -88,7 +109,6 @@ public class TokenFilter extends OncePerRequestFilter {
                         TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
                 saveAuth(authentication);
                 filterChain.doFilter(httpServletRequest, httpServletResponse);
-                stop = true;
                 return;
             }
             case "/web/register": {
@@ -96,7 +116,6 @@ public class TokenFilter extends OncePerRequestFilter {
                         TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
                 saveAuth(authentication);
                 filterChain.doFilter(httpServletRequest, httpServletResponse);
-                stop = true;
                 return;
             }
         }
@@ -200,9 +219,20 @@ public class TokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
+    /**
+     * Saves authentication to context, Authentication.isAuthenticated() determines if this user should be trusted
+     * @param authentication (Token_Authentication of AnonymousAuthentication object, that stores current user credentials)
+     */
     private void saveAuth(Authentication authentication){
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        //System.out.println("Filter finished at " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
     }
+
+
+    /**
+     * Used to conveniently generate empty HashSet of class SimpleGrantedAuthority
+     * @return empty HashSet
+     */
     private HashSet<SimpleGrantedAuthority> empAuthList(){
         return new HashSet<SimpleGrantedAuthority>();
     }

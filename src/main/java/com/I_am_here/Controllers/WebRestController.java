@@ -5,6 +5,7 @@ import com.I_am_here.Database.Entity.Manager;
 import com.I_am_here.Database.Entity.Party;
 import com.I_am_here.Database.Entity.Subject;
 import com.I_am_here.Database.Repository.ManagerRepository;
+import com.I_am_here.Database.Repository.PartyRepository;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,12 @@ import java.util.HashSet;
 public class WebRestController {
 
     private ManagerRepository managerRepository;
+    private PartyRepository partyRepository;
     private TokenParser tokenParser;
 
-    public WebRestController(ManagerRepository managerRepository, TokenParser tokenParser) {
+    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, TokenParser tokenParser) {
         this.managerRepository = managerRepository;
+        this.partyRepository = partyRepository;
         this.tokenParser = tokenParser;
     }
 
@@ -86,6 +89,43 @@ public class WebRestController {
         managerRepository.saveAndFlush(manager);
         return new ResponseEntity<TokenData>(data, HttpStatus.OK);
     }
+
+
+    /**
+     * Create new Party for that manager. If an error occurs, 418 status is returned.
+     * Name of a party should be unique, so if such manager already has a party with that name, server will return 409 error.
+     * @param access_token - manager access token
+     * @param name - Name of a new party
+     * @param broadcast_word - Code word that will be used to enter this party
+     * @param description - Optional party description
+     */
+    @PostMapping("/web/create_party")
+    public ResponseEntity<String> createParty(
+            @RequestHeader String access_token,
+            @RequestParam(name = "name") String name,
+            @RequestParam(name = "code") String broadcast_word,
+            @RequestParam(name = "description", required = false, defaultValue = "Some event") String description
+
+    ){
+        try{
+            String UUID = tokenParser.getUUID(access_token);
+            Manager manager = managerRepository.getByUuid(UUID);
+            Party party = partyRepository.getByNameAndManager(name, manager);
+            if(party != null){
+                return new ResponseEntity<>("Name of a party should be unique for a single user", HttpStatus.CONFLICT);
+            }
+            Party newParty = new Party(name, description, broadcast_word, manager);
+            newParty = partyRepository.saveAndFlush(newParty);
+            manager.addParty(newParty);
+            managerRepository.saveAndFlush(manager);
+            return new ResponseEntity<>("Created " + name, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Request handle error", HttpStatus.I_AM_A_TEAPOT);
+        }
+    }
+
+
 
 
     /**

@@ -2,8 +2,10 @@ package com.I_am_here.Database.Entity;
 
 
 import com.I_am_here.Database.Account;
+import com.I_am_here.TransportableData.TokenData;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -36,8 +38,14 @@ public class Host implements Account {
     @Column(name = "refresh_token")
     private String refresh_token;
 
+    @Column(name = "qr_token")
+    private String qr_token;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
     private Set<QR_key_word> qr_key_words;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
+    private Set<Code_word_host> code_words;
 
     @ManyToMany
     @JoinTable(name = "manager_host", joinColumns =
@@ -53,7 +61,22 @@ public class Host implements Account {
     public Host() {
     }
 
-    public Host(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<QR_key_word> qr_key_words, Set<Manager> managers, Set<Subject> subjects) {
+    public Host(String uuid, String name, String email, String phone_number, String password, TokenData tokenData){
+        this.uuid = uuid;
+        this.name = name;
+        this.email = email;
+        this.phone_number = phone_number;
+        this.password = password;
+        this.access_token = tokenData.getAccess_token();
+        this.refresh_token = tokenData.getRefresh_token();
+        this.qr_token = "";
+        this.qr_key_words = new HashSet<>();
+        this.code_words = new HashSet<>();
+        this.managers = new HashSet<>();
+        this.subjects = new HashSet<>();
+    }
+
+    public Host(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, String qr_token, Set<QR_key_word> qr_key_words, Set<Code_word_host> code_words, Set<Manager> managers, Set<Subject> subjects) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
@@ -61,12 +84,12 @@ public class Host implements Account {
         this.password = password;
         this.access_token = access_token;
         this.refresh_token = refresh_token;
+        this.qr_token = qr_token;
         this.qr_key_words = qr_key_words;
+        this.code_words = code_words;
         this.managers = managers;
         this.subjects = subjects;
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -75,16 +98,18 @@ public class Host implements Account {
 
         Host host = (Host) o;
 
-        if (host_id != null ? !host_id.equals(host.host_id) : host.host_id != null) return false;
-        if (uuid != null ? !uuid.equals(host.uuid) : host.uuid != null) return false;
+        if (!host_id.equals(host.host_id)) return false;
+        if (!uuid.equals(host.uuid)) return false;
         if (name != null ? !name.equals(host.name) : host.name != null) return false;
         if (email != null ? !email.equals(host.email) : host.email != null) return false;
         if (phone_number != null ? !phone_number.equals(host.phone_number) : host.phone_number != null) return false;
-        if (password != null ? !password.equals(host.password) : host.password != null) return false;
+        if (!password.equals(host.password)) return false;
         if (access_token != null ? !access_token.equals(host.access_token) : host.access_token != null) return false;
         if (refresh_token != null ? !refresh_token.equals(host.refresh_token) : host.refresh_token != null)
             return false;
+        if (qr_token != null ? !qr_token.equals(host.qr_token) : host.qr_token != null) return false;
         if (qr_key_words != null ? !qr_key_words.equals(host.qr_key_words) : host.qr_key_words != null) return false;
+        if (code_words != null ? !code_words.equals(host.code_words) : host.code_words != null) return false;
         if (managers != null ? !managers.equals(host.managers) : host.managers != null) return false;
         return subjects != null ? subjects.equals(host.subjects) : host.subjects == null;
 
@@ -92,17 +117,15 @@ public class Host implements Account {
 
     @Override
     public int hashCode() {
-        int result = host_id != null ? host_id.hashCode() : 0;
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        int result = host_id.hashCode();
+        result = 31 * result + uuid.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (phone_number != null ? phone_number.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + password.hashCode();
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
-        result = 31 * result + (qr_key_words != null ? qr_key_words.hashCode() : 0);
-        result = 31 * result + (managers != null ? managers.hashCode() : 0);
-        result = 31 * result + (subjects != null ? subjects.hashCode() : 0);
+        result = 31 * result + (qr_token != null ? qr_token.hashCode() : 0);
         return result;
     }
 
@@ -177,6 +200,14 @@ public class Host implements Account {
         this.refresh_token = refresh_token;
     }
 
+    public String getQr_token() {
+        return qr_token;
+    }
+
+    public void setQr_token(String qr_token) {
+        this.qr_token = qr_token;
+    }
+
     public Set<QR_key_word> getQr_key_words() {
         return qr_key_words;
     }
@@ -201,6 +232,14 @@ public class Host implements Account {
         this.subjects = subjects;
     }
 
+    public Set<Code_word_host> getCode_words() {
+        return code_words;
+    }
+
+    public void setCode_words(Set<Code_word_host> code_words) {
+        this.code_words = code_words;
+    }
+
     @Override
     public String toString() {
         return "Host{" +
@@ -212,9 +251,8 @@ public class Host implements Account {
                 ", password='" + password + '\'' +
                 ", access_token='" + access_token + '\'' +
                 ", refresh_token='" + refresh_token + '\'' +
+                ", qr_token='" + qr_token + '\'' +
                 ", qr_key_words=" + qr_key_words +
-                ", managers=" + managers +
-                ", subjects=" + subjects +
                 '}';
     }
 }

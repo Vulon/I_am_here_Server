@@ -30,6 +30,14 @@ public class Subject {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date finish_date;
 
+    @Column(name = "broadcast_word")
+    private String broadcast_word;
+
+    @Column(name = "broadcast_start")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date broadcast_start;
+
+
     @ManyToOne
     @JoinColumn(name = "manager_id")
     private Manager manager;
@@ -47,16 +55,7 @@ public class Subject {
     public Subject() {
     }
 
-    public Subject(String name, Integer plan, String description, Date start_date, Date finish_date, Manager manager, Set<Host> hosts, Set<Party> parties) {
-        this.name = name;
-        this.plan = plan;
-        this.description = description;
-        this.start_date = start_date;
-        this.finish_date = finish_date;
-        this.manager = manager;
-        this.hosts = hosts;
-        this.parties = parties;
-    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -66,11 +65,14 @@ public class Subject {
         Subject subject = (Subject) o;
 
         if (!subject_id.equals(subject.subject_id)) return false;
-        if (name != null ? !name.equals(subject.name) : subject.name != null) return false;
+        if (!name.equals(subject.name)) return false;
         if (plan != null ? !plan.equals(subject.plan) : subject.plan != null) return false;
         if (description != null ? !description.equals(subject.description) : subject.description != null) return false;
         if (start_date != null ? !start_date.equals(subject.start_date) : subject.start_date != null) return false;
         if (finish_date != null ? !finish_date.equals(subject.finish_date) : subject.finish_date != null) return false;
+        if (!broadcast_word.equals(subject.broadcast_word)) return false;
+        if (broadcast_start != null ? !broadcast_start.equals(subject.broadcast_start) : subject.broadcast_start != null)
+            return false;
         if (manager != null ? !manager.equals(subject.manager) : subject.manager != null) return false;
         if (hosts != null ? !hosts.equals(subject.hosts) : subject.hosts != null) return false;
         return parties != null ? parties.equals(subject.parties) : subject.parties == null;
@@ -80,15 +82,30 @@ public class Subject {
     @Override
     public int hashCode() {
         int result = subject_id.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + name.hashCode();
         result = 31 * result + (plan != null ? plan.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (start_date != null ? start_date.hashCode() : 0);
         result = 31 * result + (finish_date != null ? finish_date.hashCode() : 0);
-        result = 31 * result + (manager != null ? manager.hashCode() : 0);
-        result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
-        result = 31 * result + (parties != null ? parties.hashCode() : 0);
+        result = 31 * result + broadcast_word.hashCode();
+        result = 31 * result + (broadcast_start != null ? broadcast_start.hashCode() : 0);
         return result;
+    }
+
+    public String getBroadcast_word() {
+        return broadcast_word;
+    }
+
+    public void setBroadcast_word(String broadcast_word) {
+        this.broadcast_word = broadcast_word;
+    }
+
+    public Date getBroadcast_start() {
+        return broadcast_start;
+    }
+
+    public void setBroadcast_start(Date broadcast_start) {
+        this.broadcast_start = broadcast_start;
     }
 
     public Integer getSubject_id() {
@@ -161,5 +178,19 @@ public class Subject {
 
     public void setParties(Set<Party> parties) {
         this.parties = parties;
+    }
+
+    @Override
+    public String toString() {
+        return "Subject{" +
+                "subject_id=" + subject_id +
+                ", name='" + name + '\'' +
+                ", plan=" + plan +
+                ", description='" + description + '\'' +
+                ", start_date=" + start_date +
+                ", finish_date=" + finish_date +
+                ", broadcast_word='" + broadcast_word + '\'' +
+                ", broadcast_start=" + broadcast_start +
+                '}';
     }
 }

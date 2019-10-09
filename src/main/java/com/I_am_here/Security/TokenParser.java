@@ -28,12 +28,9 @@ public class TokenParser {
     private SecretDataLoader secretDataLoader;
 
 
-    /*Is used to load constants from application.properties file*/
-    private Environment env;
 
     public TokenParser(SecretDataLoader secretDataLoader, Environment env) {
         this.secretDataLoader = secretDataLoader;
-        this.env = env;
     }
 
     /**
@@ -169,9 +166,9 @@ public class TokenParser {
     private Date calculateExpirationDate(Date now, TYPE tokenType){
         long seconds;
         if(tokenType == TYPE.ACCESS){
-            seconds = Long.parseLong(env.getProperty("access_token_life_seconds"));
+            seconds = secretDataLoader.getAccessTokenValidity();
         }else if(tokenType == TYPE.REFRESH){
-            seconds = Long.parseLong(env.getProperty("refresh_token_life_seconds"));
+            seconds = secretDataLoader.getRefreshTokenValidity();
         }else{
             throw new RuntimeException("Not supported token type: " + tokenType);
         }

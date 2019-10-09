@@ -4,13 +4,13 @@ package com.I_am_here.Database.Entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "code_word")
-public class Code_word {
+@Table(name = "code_word_participator")
+public class Code_word_participator {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "code_word_id")
-    private Integer code_word_id;
+    @Column(name = "code_word_participator_id")
+    private Integer code_word_participator_id;
 
 
     @Column(name = "code_word", nullable = false)
@@ -20,10 +20,10 @@ public class Code_word {
     @JoinColumn(name = "participator_id")
     private Participator participator;
 
-    public Code_word() {
+    public Code_word_participator() {
     }
 
-    public Code_word(String code_word, Participator participator) {
+    public Code_word_participator(String code_word, Participator participator) {
         this.code_word = code_word;
         this.participator = participator;
     }
@@ -33,28 +33,27 @@ public class Code_word {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Code_word code_word1 = (Code_word) o;
+        Code_word_participator code_wordParticipator1 = (Code_word_participator) o;
 
-        if (!code_word_id.equals(code_word1.code_word_id)) return false;
-        if (code_word != null ? !code_word.equals(code_word1.code_word) : code_word1.code_word != null) return false;
-        return participator.equals(code_word1.participator);
+        if (!code_word_participator_id.equals(code_wordParticipator1.code_word_participator_id)) return false;
+        if (code_word != null ? !code_word.equals(code_wordParticipator1.code_word) : code_wordParticipator1.code_word != null) return false;
+        return participator.equals(code_wordParticipator1.participator);
 
     }
 
     @Override
     public int hashCode() {
-        int result = code_word_id.hashCode();
+        int result = code_word_participator_id.hashCode();
         result = 31 * result + (code_word != null ? code_word.hashCode() : 0);
-        result = 31 * result + participator.hashCode();
         return result;
     }
 
-    public Integer getCode_word_id() {
-        return code_word_id;
+    public Integer getCode_word_participator_id() {
+        return code_word_participator_id;
     }
 
-    public void setCode_word_id(Integer code_word_id) {
-        this.code_word_id = code_word_id;
+    public void setCode_word_participator_id(Integer code_word_participator_id) {
+        this.code_word_participator_id = code_word_participator_id;
     }
 
     public String getCode_word() {

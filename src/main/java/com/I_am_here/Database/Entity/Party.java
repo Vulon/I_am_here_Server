@@ -1,6 +1,9 @@
 package com.I_am_here.Database.Entity;
 
 import javax.persistence.*;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -11,13 +14,21 @@ public class Party {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "party_id")
-    private Integer party_id;
+    private Integer party;
 
     @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "description", nullable = true)
     private String description;
+
+
+    @Column(name = "broadcast_word")
+    private String broadcastWord;
+
+    @Column(name = "broadcast_start")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date broadcastStart;
 
     @ManyToMany
     @JoinTable(name = "party_subject", joinColumns =
@@ -36,12 +47,20 @@ public class Party {
     public Party() {
     }
 
-    public Party(String name, String description, Set<Subject> subjects, Set<Participator> participators, Manager manager) {
+
+
+    public Party(String name, String description, String broadcastWord, Manager manager){
         this.name = name;
         this.description = description;
-        this.subjects = subjects;
-        this.participators = participators;
         this.manager = manager;
+        this.subjects = new HashSet<>();
+        this.participators = new HashSet<>();
+        this.broadcastStart = Date.from(Instant.now());
+        this.broadcastWord = broadcastWord;
+    }
+
+    public void addParticipator(Participator p){
+        this.participators.add(p);
     }
 
     @Override
@@ -51,9 +70,12 @@ public class Party {
 
         Party party = (Party) o;
 
-        if (!party_id.equals(party.party_id)) return false;
+        if (!this.party.equals(party.party)) return false;
         if (!name.equals(party.name)) return false;
         if (description != null ? !description.equals(party.description) : party.description != null) return false;
+        if (!broadcastWord.equals(party.broadcastWord)) return false;
+        if (broadcastStart != null ? !broadcastStart.equals(party.broadcastStart) : party.broadcastStart != null)
+            return false;
         if (subjects != null ? !subjects.equals(party.subjects) : party.subjects != null) return false;
         if (participators != null ? !participators.equals(party.participators) : party.participators != null)
             return false;
@@ -63,21 +85,36 @@ public class Party {
 
     @Override
     public int hashCode() {
-        int result = party_id.hashCode();
+        int result = party.hashCode();
         result = 31 * result + name.hashCode();
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (subjects != null ? subjects.hashCode() : 0);
-        result = 31 * result + (participators != null ? participators.hashCode() : 0);
-        result = 31 * result + (manager != null ? manager.hashCode() : 0);
+        result = 31 * result + broadcastWord.hashCode();
+        result = 31 * result + (broadcastStart != null ? broadcastStart.hashCode() : 0);
         return result;
     }
 
-    public Integer getParty_id() {
-        return party_id;
+    public String getBroadcastWord() {
+        return broadcastWord;
     }
 
-    public void setParty_id(Integer party_id) {
-        this.party_id = party_id;
+    public void setBroadcastWord(String broadcastWord) {
+        this.broadcastWord = broadcastWord;
+    }
+
+    public Date getBroadcastStart() {
+        return broadcastStart;
+    }
+
+    public void setBroadcastStart(Date broadcastStart) {
+        this.broadcastStart = broadcastStart;
+    }
+
+    public Integer getParty() {
+        return party;
+    }
+
+    public void setParty(Integer party) {
+        this.party = party;
     }
 
     public String getName() {
@@ -118,5 +155,16 @@ public class Party {
 
     public void setManager(Manager manager) {
         this.manager = manager;
+    }
+
+    @Override
+    public String toString() {
+        return "Party{" +
+                "party=" + party +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", broadcastWord='" + broadcastWord + '\'' +
+                ", broadcastStart=" + broadcastStart +
+                '}';
     }
 }

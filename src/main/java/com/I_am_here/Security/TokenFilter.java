@@ -21,6 +21,8 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+import static com.I_am_here.Application.tokenParser;
+
 /**
  * Filter - used in Spring Security. Spring creates token chain, where executes filters.
  * Filter can get access to all data, stored in a http request, cookies, session.
@@ -39,50 +41,16 @@ public class TokenFilter extends OncePerRequestFilter {
     private static Pattern host_pattern;
     private static Pattern participator_pattern;
     private static Pattern refresh_pattern;
+    private static Pattern app_pattern;
     static {
         web_pattern = Pattern.compile("/web/[a-zA-Z_]*");
         host_pattern = Pattern.compile("/app/host/[a-zA-Z_]*");
         participator_pattern = Pattern.compile("/app/participator/[a-zA-Z_]*");
         refresh_pattern = Pattern.compile("/[a-zA-Z_]*/refresh");
-    }
-
-    /**
-     * Checks if the entered token can be used to access this url path
-     * @param token Token used in authentication
-     * @param path Url path that caller tries to access
-     * @return true - if caller can access this url with that token, false otherwise
-     */
-    private boolean isPathCorrect(String token, String path){
-        TokenParser tokenParser = Application.tokenParser;
-        TokenParser.ACCOUNT account_type = tokenParser.getAccountType(token);
-        TokenParser.TYPE token_type = tokenParser.getType(token);
-        System.out.println("Checking path " + path + " for type " + account_type);
-        if(token_type == TokenParser.TYPE.REFRESH){
-            return refresh_pattern.matcher(path).matches();
-        }
-        if(account_type == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
-            return web_pattern.matcher(path).matches();
-        }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_HOST){
-            return host_pattern.matcher(path).matches();
-        }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-            return participator_pattern.matcher(path).matches();
-        }else{
-            return false;
-        }
+        app_pattern = Pattern.compile("/app/[a-zA-Z_]*");
     }
 
 
-    public static final String LOGIN_TOKEN = "login";
-    public static final String REGISTER_TOKEN = "register";
-
-
-
-    @Autowired
-    private HostRepository hostRepository;
-    @Autowired
-    private ManagerRepository managerRepository;
-    @Autowired
-    private ParticipatorRepository participatorRepository;
 
     /**
      * This method invokes, when filter starts filtering the request.
@@ -90,132 +58,27 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
-        String access_token = httpServletRequest.getHeader("access_token");
 
-        String refresh_token = httpServletRequest.getHeader("refresh_type");
+
 
         String path =  httpServletRequest.getRequestURI();
-        //System.out.println("Filter start at: " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
-        switch (path) {
-            case "/web/login": {
-                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGIN,
-                        TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
-                saveAuth(authentication);
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
-                return;
-            }
-            case "/web/logout": {
-                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGOUT,
-                        TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
-                saveAuth(authentication);
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
-                return;
-            }
-            case "/web/register": {
-                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.REGISTER,
-                        TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
-                saveAuth(authentication);
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
-                return;
-            }
-        }
-        String type_header = httpServletRequest.getHeader("account_type");
-        if(type_header == null){
-            filterChain.doFilter(httpServletRequest, httpServletResponse);
-            return;
-        }
-
-        TokenParser.ACCOUNT account_type = TokenParser.ACCOUNT.valueOf(httpServletRequest.getHeader("account_type"));
-        switch (path){
-            case "/app/login":{
-                if(!(account_type == TokenParser.ACCOUNT.ACCOUNT_HOST) && !(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR)){
-                    break;
-                }
-                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGIN,
-                        account_type, true);
-                saveAuth(authentication);
-                break;
-            }
-            case "/app/register":{
-                if(!(account_type == TokenParser.ACCOUNT.ACCOUNT_HOST) && !(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR)){
-                    break;
-                }
-                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.REGISTER,
-                        account_type, true);
-                saveAuth(authentication);
-                break;
-            }
-            default:{
-                System.out.println("ENTERED Default case");
-                Token_Authentication authentication;
-                TokenParser tokenParser = Application.tokenParser;
-                try{
-                    if(access_token != null){
-                        if(tokenParser.isExpired(access_token)){
-                            authentication = new Token_Authentication(access_token, empAuthList(), false);
-                            saveAuth(authentication);
-                            System.out.println("Expired date");
-                            break;
+        try{
+            if(!filterUnsecuredWebPath(path)){
+                if(!filterUnsecuredAppPath(path, httpServletRequest)){
+                    if(!filterRefreshPath(path, httpServletRequest)){
+                        String access_token = httpServletRequest.getHeader("access_token");
+                        if(!filterAccessWebPath(path, access_token)){
+                            if(!filterAccessAppPath(path, access_token)){
+                                clearAuth();
+                            }
                         }
-                        if(!isPathCorrect(access_token, path)){
-                            authentication = new Token_Authentication(access_token, empAuthList(), false);
-                            System.out.println("Path not correct");
-                            saveAuth(authentication);
-                            break;
-                        }
-                        authentication = new Token_Authentication(access_token, empAuthList(), true);
-                        System.out.println("Created Authentication");
-                        if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
-                            authentication.addManagerAuthority();
-                        }else if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
-                            authentication.addHostAuthority();
-                        }else if(tokenParser.getAccountType(access_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-                            authentication.addParticipatorAuthority();
-                        }
-                        System.out.println(authentication);
-                        saveAuth(authentication);
-
-                    }else if(refresh_token != null){
-                        if(tokenParser.isExpired(refresh_token)){
-                            authentication = new Token_Authentication(refresh_token, empAuthList(), false);
-                            saveAuth(authentication);
-                            System.out.println("Expired date");
-                            break;
-                        }
-                        if(!isPathCorrect(refresh_token, path)){
-                            authentication = new Token_Authentication(refresh_token, empAuthList(), false);
-                            System.out.println("Path not correct");
-                            saveAuth(authentication);
-                            break;
-                        }
-                        authentication = new Token_Authentication(refresh_token, empAuthList(), true);
-                        System.out.println("Created Authentication");
-                        if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
-                            authentication.addManagerAuthority();
-                        }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
-                            authentication.addHostAuthority();
-                        }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-                            authentication.addParticipatorAuthority();
-                        }
-                        System.out.println(authentication);
-                        saveAuth(authentication);
-                    }else{
-                        authentication = new Token_Authentication(refresh_token, empAuthList(), false);
-                        saveAuth(authentication);
-                        System.err.println("Something went wrong with access token");
-                        break;
                     }
-
-
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                    SecurityContextHolder.clearContext();
                 }
-
             }
+        }catch (Exception e){
+            e.printStackTrace();
+            clearAuth();
         }
-
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
@@ -226,6 +89,149 @@ public class TokenFilter extends OncePerRequestFilter {
     private void saveAuth(Authentication authentication){
         SecurityContextHolder.getContext().setAuthentication(authentication);
         //System.out.println("Filter finished at " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
+    }
+
+    private void clearAuth(){
+        SecurityContextHolder.clearContext();
+    }
+
+    private boolean filterUnsecuredWebPath(String path){
+
+        switch (path){
+            case "/web/login":{
+                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGIN,
+                        TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
+                saveAuth(authentication);
+                return true;
+            }
+            case "/web/register":{
+                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.REGISTER,
+                        TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
+                saveAuth(authentication);
+                return true;
+            }
+            case "/web/logout":{
+                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGOUT,
+                        TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
+                saveAuth(authentication);
+                return true;
+            }
+
+            default: {
+                return false;
+            }
+        }
+    }
+
+    private boolean filterUnsecuredAppPath(String path, HttpServletRequest httpServletRequest) {
+        String type_header = httpServletRequest.getHeader("account_type");
+        if(type_header == null) {
+            return false;
+        }
+        TokenParser.ACCOUNT account_type;
+        try {
+            account_type = TokenParser.ACCOUNT.valueOf(type_header);
+        }catch (Exception e) {
+            return false;
+        }
+        if(!(account_type == TokenParser.ACCOUNT.ACCOUNT_HOST) && !(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR)){
+            return false;
+        }
+
+        switch (path) {
+            case "/app/login":{
+                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGIN,
+                        account_type, true);
+                saveAuth(authentication);
+                return true;
+            }
+            case "/app/register":{
+                AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.REGISTER,
+                        account_type, true);
+                saveAuth(authentication);
+                return true;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+
+    private boolean filterRefreshPath(String path, HttpServletRequest httpServletRequest) {
+        String refresh_token = httpServletRequest.getHeader("refresh_token");
+        if(refresh_token == null) {
+            return false;
+        }
+
+        if(refresh_pattern.matcher(path).matches()) {
+            if(tokenParser.isExpired(refresh_token)){
+                saveAuth(new Token_Authentication(refresh_token, empAuthList(), false));
+                System.out.println("Expired date");
+                return false;
+            }
+            Token_Authentication authentication = new Token_Authentication(refresh_token, empAuthList(), true);
+            if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
+                authentication.addManagerAuthority();
+            }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                authentication.addHostAuthority();
+            }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                authentication.addParticipatorAuthority();
+            }
+            System.out.println(authentication);
+            saveAuth(authentication);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private boolean filterAccessWebPath(String path, String access_token) {
+        if(!web_pattern.matcher(path).matches()) {
+            return false;
+        }
+        if(access_token == null){
+            return false;
+        }
+        if(tokenParser.isExpired(access_token)) {
+            return false;
+        }
+        TokenParser.ACCOUNT account_type = tokenParser.getAccountType(access_token);
+        if(account_type != TokenParser.ACCOUNT.ACCOUNT_MANAGER) {
+            return false;
+        }
+        Token_Authentication authentication = new Token_Authentication(access_token, empAuthList(), true);
+        authentication.addManagerAuthority();
+        saveAuth(authentication);
+        return true;
+    }
+
+    private boolean filterAccessAppPath(String path, String access_token){
+        if(!app_pattern.matcher(path).matches()
+        && !host_pattern.matcher(path).matches()
+        && !participator_pattern.matcher(path).matches()) {
+            return false;
+        }
+
+
+        if(access_token == null) {
+            return false;
+        }
+        if(tokenParser.isExpired(access_token)) {
+            return false;
+        }
+        TokenParser.ACCOUNT account_type = tokenParser.getAccountType(access_token);
+        if(account_type != TokenParser.ACCOUNT.ACCOUNT_HOST && account_type != TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR) {
+            return false;
+        }
+        Token_Authentication authentication = new Token_Authentication(access_token, empAuthList(), true);
+        if(account_type == TokenParser.ACCOUNT.ACCOUNT_HOST) {
+            authentication.addHostAuthority();
+        }else{
+            authentication.addParticipatorAuthority();
+        }
+        saveAuth(authentication);
+        return true;
     }
 
 

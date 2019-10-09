@@ -10,4 +10,6 @@ public interface ParticipatorRepository extends JpaRepository<Participator, Inte
     Participator findByUuidAndPassword(String UUID, String password);
     @Query
     Participator getByUuidAndPassword(String UUID, String password);
+
+
 }

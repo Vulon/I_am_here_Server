@@ -2,8 +2,10 @@ package com.I_am_here.Database.Entity;
 
 
 import com.I_am_here.Database.Account;
+import com.I_am_here.TransportableData.TokenData;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -18,13 +20,13 @@ public class Participator implements Account {
     @Column(name = "participator_uuid", nullable = false)
     private String uuid;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "phone_number", nullable = false, unique = true)
+    @Column(name = "phone_number")
     private String phone_number;
 
     @Column(name = "password")
@@ -32,7 +34,7 @@ public class Participator implements Account {
 
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "participator")
-    private Set<Code_word> code_words;
+    private Set<Code_word_participator> code_words;
 
     @Column(name = "access_token")
     private String access_token;
@@ -51,17 +53,22 @@ public class Participator implements Account {
     public Participator() {
     }
 
-    public Participator(String uuid, String name, String email, String phone_number, String password, Set<Code_word> code_words, String access_token, String refresh_token, Set<Visit> visits, Set<Party> parties) {
+
+    public Participator(String uuid, String name, String email, String phone_number, String password, TokenData tokenData) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
         this.phone_number = phone_number;
         this.password = password;
-        this.code_words = code_words;
-        this.access_token = access_token;
-        this.refresh_token = refresh_token;
-        this.visits = visits;
-        this.parties = parties;
+        this.code_words = new HashSet<>();
+        this.access_token = tokenData.getAccess_token();
+        this.refresh_token = tokenData.getRefresh_token();
+        this.visits = new HashSet<>();
+        this.parties = new HashSet<>();
+    }
+
+    public void addParty(Party party){
+        this.parties.add(party);
     }
 
     @Override
@@ -94,11 +101,8 @@ public class Participator implements Account {
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + phone_number.hashCode();
         result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (code_words != null ? code_words.hashCode() : 0);
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
-        result = 31 * result + (visits != null ? visits.hashCode() : 0);
-        result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
     }
 
@@ -152,11 +156,11 @@ public class Participator implements Account {
         this.password = password;
     }
 
-    public Set<Code_word> getCode_words() {
+    public Set<Code_word_participator> getCode_words() {
         return code_words;
     }
 
-    public void setCode_words(Set<Code_word> code_words) {
+    public void setCode_words(Set<Code_word_participator> code_words) {
         this.code_words = code_words;
     }
 
@@ -190,5 +194,19 @@ public class Participator implements Account {
 
     public void setParties(Set<Party> parties) {
         this.parties = parties;
+    }
+
+    @Override
+    public String toString() {
+        return "Participator{" +
+                "participator_id=" + participator_id +
+                ", uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone_number='" + phone_number + '\'' +
+                ", password='" + password + '\'' +
+                ", access_token='" + access_token + '\'' +
+                ", refresh_token='" + refresh_token + '\'' +
+                '}';
     }
 }

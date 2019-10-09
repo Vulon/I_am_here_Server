@@ -38,6 +38,11 @@ public class SecretDataLoader {
         return seconds;
     }
 
+    public long getPartyBroadcastDuration(){
+        long seconds = Long.parseLong(env.getProperty("party_broadcast_durration"));
+        return seconds;
+    }
+
 
     /**
      * Get secret_token_key property from application.properties

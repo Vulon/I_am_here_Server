@@ -66,6 +66,20 @@ public class Manager implements Account {
         this.parties = parties;
     }
 
+    public void addParty(Party party){
+        this.parties.add(party);
+    }
+
+
+
+
+
+
+
+
+
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -97,9 +111,6 @@ public class Manager implements Account {
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
-        result = 31 * result + (subjects != null ? subjects.hashCode() : 0);
-        result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
-        result = 31 * result + (parties != null ? parties.hashCode() : 0);
         return result;
     }
 
@@ -203,9 +214,6 @@ public class Manager implements Account {
                 ", password='" + password + '\'' +
                 ", access_token='" + access_token + '\'' +
                 ", refresh_token='" + refresh_token + '\'' +
-                ", subjects=" + subjects +
-                ", hosts=" + hosts +
-                ", parties=" + parties +
                 '}';
     }
 }

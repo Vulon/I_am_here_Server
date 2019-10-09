@@ -2,10 +2,10 @@ package com.I_am_here.Controllers;
 
 import com.I_am_here.Database.Account;
 import com.I_am_here.Database.Entity.*;
-import com.I_am_here.Database.Repository.HostRepository;
-import com.I_am_here.Database.Repository.ManagerRepository;
-import com.I_am_here.Database.Repository.ParticipatorRepository;
+import com.I_am_here.Database.Repository.*;
 import com.I_am_here.Security.TokenParser;
+import com.I_am_here.Services.SecretDataLoader;
+import com.I_am_here.TransportableData.PartyData;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
-
+import java.util.Set;
 
 
 /**
@@ -27,14 +27,22 @@ public class AndroidRestController {
 
     private HostRepository hostRepository;
     private ParticipatorRepository participatorRepository;
+    private PartyRepository partyRepository;
+    private SubjectRepository subjectRepository;
+
     private ManagerRepository managerRepository;
     private TokenParser tokenParser;
+    private SecretDataLoader secretDataLoader;
 
-    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, ManagerRepository managerRepository, TokenParser tokenParser) {
+
+    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader) {
         this.hostRepository = hostRepository;
         this.participatorRepository = participatorRepository;
+        this.partyRepository = partyRepository;
+        this.subjectRepository = subjectRepository;
         this.managerRepository = managerRepository;
         this.tokenParser = tokenParser;
+        this.secretDataLoader = secretDataLoader;
     }
 
     /**
@@ -65,14 +73,12 @@ public class AndroidRestController {
 
         if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
             TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
-            Host host = new Host(UUID, name, email, phone_number, password, data.getAccess_token(), data.getRefresh_token(), new HashSet<>()
-            , null, new HashSet<>());
+            Host host = new Host(UUID, name, email, phone_number, password, data);
             hostRepository.saveAndFlush(host);
             return new ResponseEntity<TokenData>(data, HttpStatus.OK);
         }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
             TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
-            Participator participator = new Participator(UUID, name, email, phone_number, password, new HashSet<>(),
-                    data.getAccess_token(), data.getRefresh_token(), new HashSet<>(), new HashSet<>());
+            Participator participator = new Participator(UUID, name, email, phone_number, password, data);
             participatorRepository.saveAndFlush(participator);
 
             return new ResponseEntity<TokenData>(data, HttpStatus.OK);
@@ -208,6 +214,78 @@ public class AndroidRestController {
         }catch (Exception e){
             e.printStackTrace();
             return error(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/app/participator/find_party")
+    public ResponseEntity<Set<PartyData>> getPartyList(
+            @RequestHeader String access_token,
+            @RequestParam String code_word
+    ){
+        Date broadcast_start = Date.from(Instant.now().minusSeconds(secretDataLoader.getPartyBroadcastDuration()));
+        Set<Party> partyList = partyRepository.getAllByBroadcastWord(code_word);
+        if(partyList == null){
+            return new ResponseEntity<>(new HashSet<PartyData>(), HttpStatus.OK);
+        }
+        System.out.println("BroadCast start: " + broadcast_start);
+        return  new ResponseEntity<>(PartyData.createPartyData(partyList), HttpStatus.OK);
+    }
+
+    @PostMapping("/app/participator/join_party")
+    public ResponseEntity<String> joinParty(
+            @RequestParam Integer party_id,
+            @RequestParam String code_word,
+            @RequestHeader String access_token
+    ){
+        Party party = partyRepository.findByParty(party_id);
+        if(party == null){
+            return new ResponseEntity<>("Not found", HttpStatus.CONFLICT);
+        }
+        if(party.getBroadcastWord().equals(code_word)){
+            Participator participator = (Participator)getAccount(access_token);
+            System.out.println("Found party: " + party);
+            System.out.println("Found Participator: " + participator);
+
+            party.addParticipator(participator);
+            party = partyRepository.saveAndFlush(party);
+            System.out.println("Result party: " + party);
+            participator.addParty(party);
+            System.out.println("SEMI Result participator: " + participator);
+            participator = participatorRepository.saveAndFlush(participator);
+            System.out.println("Result participator: " + participator);
+
+
+            return new ResponseEntity<>("Joined repository " + party.getName(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("Code word mismatch", HttpStatus.CONFLICT);
+        }
+    }
+
+    @GetMapping("/app/participator/my_party_list")
+    public ResponseEntity<Set<PartyData>> getPartiesByParticipator(
+            @RequestHeader String access_token
+    ){
+        Participator participator = (Participator)getAccount(access_token);
+        return new ResponseEntity<>(PartyData.createPartyData(participator.getParties()), HttpStatus.OK);
+    }
+
+    private Account getAccount(String access_token){
+        try{
+            TokenParser.ACCOUNT account = tokenParser.getAccountType(access_token);
+            String UUID = tokenParser.getUUID(access_token);
+            String password = tokenParser.getPassword(access_token);
+            if(account == TokenParser.ACCOUNT.ACCOUNT_MANAGER){
+                return managerRepository.findByUuidAndPassword(UUID, password);
+            }else if(account == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                return hostRepository.findByUuidAndPassword(UUID, password);
+            }else if(account == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                return participatorRepository.findByUuidAndPassword(UUID, password);
+            }else{
+                return null;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
         }
     }
 

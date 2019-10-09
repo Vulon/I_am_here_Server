@@ -48,8 +48,8 @@ public class QR_key_word {
     public int hashCode() {
         int result = qr_key_word_id.hashCode();
         result = 31 * result + key_word.hashCode();
-        result = 31 * result + (host != null ? host.hashCode() : 0);
-        result = 31 * result + (subject != null ? subject.hashCode() : 0);
+        result = 31 * result + (host != null ? host.getUuid().hashCode() : 0);
+        result = 31 * result + (subject != null ? subject.getName().hashCode() : 0);
         return result;
     }
 

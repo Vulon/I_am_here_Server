@@ -9,7 +9,6 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.TextCodec;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -61,23 +60,17 @@ public class TokenParser {
      * @return String - token
      */
     public String createToken(String UUID, String password, TYPE type, Date date, ACCOUNT account_type){
-        System.out.println("Started creating Token at  - " + Date.from(Instant.now()).getTime());
         Date start = calculateExpirationDate(date, type);
         byte[] bytes = getEncodedSecretKey();
         JwtBuilder builder = Jwts.builder();
-        System.out.println("Builder created at  - " + Date.from(Instant.now()).getTime());
         builder.setSubject(UUID);
         builder.setIssuedAt(date);
         builder.setExpiration(start);
         builder.claim("t", type);
         builder.claim("p", password);
         builder.claim("a", account_type);
-        System.out.println("Claims set at  - " + Date.from(Instant.now()).getTime());
         builder.signWith(SignatureAlgorithm.HS256, bytes);
-        System.out.println("Builder signed at  - " + Date.from(Instant.now()).getTime());
         String jwt = builder.compact();
-
-        System.out.println("Finished creating Token at  - " + Date.from(Instant.now()).getTime());
         return jwt;
     }
 
@@ -100,11 +93,9 @@ public class TokenParser {
      * @return TokenData instance, containing new generated tokens
      */
     public TokenData createTokenData(String UUID, String password, ACCOUNT accountType, Date now){
-        System.out.println("Started creating TokenData at  - " + Date.from(Instant.now()).getTime());
         String access = createToken(UUID, password, TYPE.ACCESS, now, accountType);
         String refresh = createToken(UUID, password, TYPE.REFRESH, now, accountType);
-        TokenData tokenData = new TokenData(access, refresh, getExpitaionDate(access), getExpitaionDate(refresh));
-        System.out.println("Finished creating TokenData at  - " + Date.from(Instant.now()).getTime());
+        TokenData tokenData = new TokenData(access, refresh, getExpirationDate(access), getExpirationDate(refresh));
         return tokenData;
     }
 
@@ -119,7 +110,7 @@ public class TokenParser {
     public TokenData getTokenData(Account account){
         String access = account.getAccess_token();
         String refresh = account.getRefresh_token();
-        TokenData tokenData = new TokenData(access, refresh, getExpitaionDate(access), getExpitaionDate(refresh));
+        TokenData tokenData = new TokenData(access, refresh, getExpirationDate(access), getExpirationDate(refresh));
         return tokenData;
     }
 
@@ -142,7 +133,7 @@ public class TokenParser {
         return getClaims(token).getIssuedAt();
     }
 
-    public Date getExpitaionDate(String token){
+    public Date getExpirationDate(String token){
         return getClaims(token).getExpiration();
     }
 

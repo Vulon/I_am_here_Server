@@ -6,6 +6,6 @@ public interface Account {
     String getUuid();
     String getAccess_token();
     String getRefresh_token();
-    String getPhone_number();
+    String getPhoneNumber();
     String getEmail();
 }

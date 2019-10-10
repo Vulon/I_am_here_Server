@@ -42,6 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new TokenFilter(), UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeRequests()
+                .antMatchers("/web/register", "/web/login", "/app/login", "/app/register", "/web/logout").authenticated()
                 .antMatchers("/web/*").access("hasAuthority('ACCOUNT_MANAGER')")
                 .antMatchers("/protected/*").access("hasAuthority('ACCOUNT_MANAGER')")
                 .antMatchers("/app/host/*").access("hasAuthority('ACCOUNT_HOST')")
@@ -54,7 +55,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/login.html", "/web/logout", "/app/register", "/app/login", "/web/register", "/web/login");
+        //web.ignoring().antMatchers("/login.html", "/web/logout", "/app/register", "/app/login", "/web/register", "/web/login");
+        web.ignoring().antMatchers("/login.html");
 
     }
 }

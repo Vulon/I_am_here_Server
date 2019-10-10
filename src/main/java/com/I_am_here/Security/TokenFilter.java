@@ -59,9 +59,9 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
 
-
-
         String path =  httpServletRequest.getRequestURI();
+        System.out.println("Filter initiated for path " + path);
+
         try{
             if(!filterUnsecuredWebPath(path)){
                 if(!filterUnsecuredAppPath(path, httpServletRequest)){
@@ -91,16 +91,25 @@ public class TokenFilter extends OncePerRequestFilter {
         //System.out.println("Filter finished at " + Date.from(Instant.now()) + "  " + Date.from(Instant.now()).getTime());
     }
 
+    /**
+     * Clear session data from context to make sure, that this connection is blocked
+     */
     private void clearAuth(){
         SecurityContextHolder.clearContext();
     }
 
+    /**
+     * Check if a user tries to access /web/ (login/register) page, in that case create Anonymous Authentication
+     * @param path URL path
+     * @return true if user is now authenticated, false otherwise
+     */
     private boolean filterUnsecuredWebPath(String path){
 
         switch (path){
             case "/web/login":{
                 AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.LOGIN,
                         TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
+
                 saveAuth(authentication);
                 return true;
             }
@@ -123,14 +132,21 @@ public class TokenFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * If user tries to access /app/(login/register) route, check account_type header
+     * And create Anonymous Authentication
+     * @param path URL path
+     * @return true if user is now authenticated, false otherwise
+     */
     private boolean filterUnsecuredAppPath(String path, HttpServletRequest httpServletRequest) {
-        String type_header = httpServletRequest.getHeader("account_type");
-        if(type_header == null) {
+        String type_param = httpServletRequest.getParameter("account_type");
+
+        if(type_param == null) {
             return false;
         }
         TokenParser.ACCOUNT account_type;
         try {
-            account_type = TokenParser.ACCOUNT.valueOf(type_header);
+            account_type = TokenParser.ACCOUNT.valueOf(type_param);
         }catch (Exception e) {
             return false;
         }
@@ -157,6 +173,11 @@ public class TokenFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Check if user tries to access refresh route, in that case he needs refresh_token header
+     * @param path URL path
+     * @return true if user is now authenticated, false otherwise
+     */
     private boolean filterRefreshPath(String path, HttpServletRequest httpServletRequest) {
         String refresh_token = httpServletRequest.getHeader("refresh_token");
         if(refresh_token == null) {
@@ -186,6 +207,12 @@ public class TokenFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Check if user tries to access /web/* route, he needs valid access token
+     * @param path URL path
+     * @param access_token Access Token
+     * @return true if user is now authenticated, false otherwise
+     */
     private boolean filterAccessWebPath(String path, String access_token) {
         if(!web_pattern.matcher(path).matches()) {
             return false;
@@ -206,6 +233,12 @@ public class TokenFilter extends OncePerRequestFilter {
         return true;
     }
 
+    /**
+     * Check if user tries to access /app/* route, then he needs a valid access token
+     * @param path URL path
+     * @param access_token Access token
+     * @return true if user is now authenticated, false otherwise
+     */
     private boolean filterAccessAppPath(String path, String access_token){
         if(!app_pattern.matcher(path).matches()
         && !host_pattern.matcher(path).matches()

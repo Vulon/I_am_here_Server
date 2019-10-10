@@ -27,7 +27,7 @@ public class Participator implements Account {
     private String email;
 
     @Column(name = "phone_number")
-    private String phone_number;
+    private String phoneNumber;
 
     @Column(name = "password")
     private String password;
@@ -54,11 +54,11 @@ public class Participator implements Account {
     }
 
 
-    public Participator(String uuid, String name, String email, String phone_number, String password, TokenData tokenData) {
+    public Participator(String uuid, String name, String email, String phoneNumber, String password, TokenData tokenData) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
-        this.phone_number = phone_number;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.code_words = new HashSet<>();
         this.access_token = tokenData.getAccess_token();
@@ -82,7 +82,7 @@ public class Participator implements Account {
         if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (email != null ? !email.equals(that.email) : that.email != null) return false;
-        if (!phone_number.equals(that.phone_number)) return false;
+        if (!phoneNumber.equals(that.phoneNumber)) return false;
         if (password != null ? !password.equals(that.password) : that.password != null) return false;
         if (code_words != null ? !code_words.equals(that.code_words) : that.code_words != null) return false;
         if (access_token != null ? !access_token.equals(that.access_token) : that.access_token != null) return false;
@@ -99,7 +99,7 @@ public class Participator implements Account {
         result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + phone_number.hashCode();
+        result = 31 * result + phoneNumber.hashCode();
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
@@ -140,12 +140,12 @@ public class Participator implements Account {
         this.email = email;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getPassword() {
@@ -203,7 +203,7 @@ public class Participator implements Account {
                 ", uuid='" + uuid + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phone_number='" + phone_number + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
                 ", access_token='" + access_token + '\'' +
                 ", refresh_token='" + refresh_token + '\'' +

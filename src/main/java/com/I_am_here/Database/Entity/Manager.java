@@ -26,7 +26,7 @@ public class Manager implements Account {
     private String email;
 
     @Column(name = "phone_number", nullable = false, unique = true)
-    private String phone_number;
+    private String phoneNumber;
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -53,11 +53,11 @@ public class Manager implements Account {
     public Manager() {
     }
 
-    public Manager(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
+    public Manager(String uuid, String name, String email, String phoneNumber, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
-        this.phone_number = phone_number;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.access_token = access_token;
         this.refresh_token = refresh_token;
@@ -90,7 +90,7 @@ public class Manager implements Account {
         if (!manager_id.equals(manager.manager_id)) return false;
         if (name != null ? !name.equals(manager.name) : manager.name != null) return false;
         if (email != null ? !email.equals(manager.email) : manager.email != null) return false;
-        if (!phone_number.equals(manager.phone_number)) return false;
+        if (!phoneNumber.equals(manager.phoneNumber)) return false;
         if (password != null ? !password.equals(manager.password) : manager.password != null) return false;
         if (access_token != null ? !access_token.equals(manager.access_token) : manager.access_token != null)
             return false;
@@ -107,7 +107,7 @@ public class Manager implements Account {
         int result = manager_id.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + phone_number.hashCode();
+        result = 31 * result + phoneNumber.hashCode();
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
@@ -147,12 +147,12 @@ public class Manager implements Account {
         this.email = email;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getPassword() {
@@ -210,7 +210,7 @@ public class Manager implements Account {
                 ", uuid='" + uuid + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phone_number='" + phone_number + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
                 ", access_token='" + access_token + '\'' +
                 ", refresh_token='" + refresh_token + '\'' +

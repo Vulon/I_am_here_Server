@@ -27,7 +27,7 @@ public class Host implements Account {
     private String email;
 
     @Column(name = "phone_number", nullable = false, unique = true)
-    private String phone_number;
+    private String phoneNumber;
 
     @Column(name = "password")
     private String password;
@@ -61,11 +61,11 @@ public class Host implements Account {
     public Host() {
     }
 
-    public Host(String uuid, String name, String email, String phone_number, String password, TokenData tokenData){
+    public Host(String uuid, String name, String email, String phoneNumber, String password, TokenData tokenData){
         this.uuid = uuid;
         this.name = name;
         this.email = email;
-        this.phone_number = phone_number;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.access_token = tokenData.getAccess_token();
         this.refresh_token = tokenData.getRefresh_token();
@@ -76,11 +76,11 @@ public class Host implements Account {
         this.subjects = new HashSet<>();
     }
 
-    public Host(String uuid, String name, String email, String phone_number, String password, String access_token, String refresh_token, String qr_token, Set<QR_key_word> qr_key_words, Set<Code_word_host> code_words, Set<Manager> managers, Set<Subject> subjects) {
+    public Host(String uuid, String name, String email, String phoneNumber, String password, String access_token, String refresh_token, String qr_token, Set<QR_key_word> qr_key_words, Set<Code_word_host> code_words, Set<Manager> managers, Set<Subject> subjects) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
-        this.phone_number = phone_number;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.access_token = access_token;
         this.refresh_token = refresh_token;
@@ -102,7 +102,7 @@ public class Host implements Account {
         if (!uuid.equals(host.uuid)) return false;
         if (name != null ? !name.equals(host.name) : host.name != null) return false;
         if (email != null ? !email.equals(host.email) : host.email != null) return false;
-        if (phone_number != null ? !phone_number.equals(host.phone_number) : host.phone_number != null) return false;
+        if (phoneNumber != null ? !phoneNumber.equals(host.phoneNumber) : host.phoneNumber != null) return false;
         if (!password.equals(host.password)) return false;
         if (access_token != null ? !access_token.equals(host.access_token) : host.access_token != null) return false;
         if (refresh_token != null ? !refresh_token.equals(host.refresh_token) : host.refresh_token != null)
@@ -121,7 +121,7 @@ public class Host implements Account {
         result = 31 * result + uuid.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (phone_number != null ? phone_number.hashCode() : 0);
+        result = 31 * result + (phoneNumber != null ? phoneNumber.hashCode() : 0);
         result = 31 * result + password.hashCode();
         result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
         result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
@@ -165,12 +165,12 @@ public class Host implements Account {
     }
 
     @Override
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     @Override
@@ -247,7 +247,7 @@ public class Host implements Account {
                 ", uuid='" + uuid + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phone_number='" + phone_number + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
                 ", access_token='" + access_token + '\'' +
                 ", refresh_token='" + refresh_token + '\'' +

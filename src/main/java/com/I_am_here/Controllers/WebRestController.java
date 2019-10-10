@@ -7,6 +7,7 @@ import com.I_am_here.Database.Entity.Subject;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.PartyRepository;
 import com.I_am_here.Security.TokenParser;
+import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 
 /**
@@ -30,12 +32,17 @@ public class WebRestController {
     private ManagerRepository managerRepository;
     private PartyRepository partyRepository;
     private TokenParser tokenParser;
+    private StatusCodeCreator statusCodeCreator;
 
-    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, TokenParser tokenParser) {
+
+    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator) {
         this.managerRepository = managerRepository;
         this.partyRepository = partyRepository;
         this.tokenParser = tokenParser;
+        this.statusCodeCreator = statusCodeCreator;
     }
+
+
 
     /**
      * This method is used to get new tokens. If everything is fine it should return response with new TokenData
@@ -43,21 +50,35 @@ public class WebRestController {
      */
     @PostMapping("/web/login")
     @ResponseBody
-    public ResponseEntity<TokenData> login(@RequestParam String UUID, @RequestParam String password){
-        Manager manager = managerRepository.findByUuidAndPassword(UUID, password);
-        System.out.println("Entered /web/login");
-        if(manager == null){
-            System.out.println("Manager was not found");
-            return new ResponseEntity<TokenData>(new TokenData(), HttpStatus.CONFLICT);
+    public ResponseEntity<TokenData> login(@RequestParam String phone_number, @RequestParam String password){
+        try{
+            System.out.println("Got phone number: " + phone_number);
+            if(phone_number.length() == 11){
+                phone_number = "+" + phone_number;
+            }else if(phone_number.length() == 12){
+                phone_number = "+" + phone_number.substring(1, 12);
+            }else{
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            if(!phone_number.matches("[+][0-9]{11}")){
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            Manager manager = managerRepository.findByPhoneNumberAndPassword(phone_number, password);
+            if(manager == null){
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.userNotFound());
+            }
+            TokenData data = tokenParser.createTokenData(manager.getUuid(), password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, Date.from(Instant.now()));
+
+            manager.setAccess_token(data.getAccess_token());
+            manager.setRefresh_token(data.getRefresh_token());
+            managerRepository.saveAndFlush(manager);
+            System.out.println("Entered manager: " + manager);
+            return new ResponseEntity<TokenData>(data, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
-        TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, Date.from(Instant.now()));
 
-        manager.setAccess_token(data.getAccess_token());
-        manager.setRefresh_token(data.getRefresh_token());
-        managerRepository.saveAndFlush(manager);
-        System.out.println("Entered /web/login, tokenData: " + data.toString());
-
-        return new ResponseEntity<TokenData>(data, HttpStatus.OK);
 
     }
 
@@ -76,18 +97,35 @@ public class WebRestController {
             @RequestParam String password,
             @RequestParam(name = "name", defaultValue = "Manager", required = false) String name,
             @RequestParam(name = "email", defaultValue = "", required = false) String email,
-            @RequestParam(name = "phone_number", defaultValue = "", required = false) String phone_number){
-        Manager manager = managerRepository.getByUuid(UUID);
-        if(manager != null){
-            return new ResponseEntity<>(new TokenData(), HttpStatus.CONFLICT);
+            @RequestParam(name = "phone_number") String phone_number){
+        try{
+            System.out.println("Got phone number: " + phone_number);
+            if(phone_number.length() == 11){
+                phone_number = "+" + phone_number;
+            }else if(phone_number.length() == 12){
+                phone_number = "+" + phone_number.substring(1, 12);
+            }else{
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            if(!phone_number.matches("[+][0-9]{11}")){
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            Manager manager = managerRepository.getByUuid(UUID);
+            if(manager != null){
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.alreadyRegistered());
+            }
+            Date now = Date.from(Instant.now());
+            TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, now);
+            manager = new Manager(UUID, name, email, phone_number, password, data.getAccess_token(), data.getRefresh_token(),
+                    new HashSet<Subject>(), new HashSet<Host>(), new HashSet<Party>());
+            System.out.println("Saving manager + " + manager.toString());
+            managerRepository.saveAndFlush(manager);
+            return new ResponseEntity<TokenData>(data, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
-        Date now = Date.from(Instant.now());
-        TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, now);
-        manager = new Manager(UUID, name, email, phone_number, password, data.getAccess_token(), data.getRefresh_token(),
-                new HashSet<Subject>(), new HashSet<Host>(), new HashSet<Party>());
-        System.out.println("Saving manager + " + manager.toString());
-        managerRepository.saveAndFlush(manager);
-        return new ResponseEntity<TokenData>(data, HttpStatus.OK);
+
     }
 
 
@@ -112,7 +150,7 @@ public class WebRestController {
             Manager manager = managerRepository.getByUuid(UUID);
             Party party = partyRepository.getByNameAndManager(name, manager);
             if(party != null){
-                return new ResponseEntity<>("Name of a party should be unique for a single user", HttpStatus.CONFLICT);
+                return new ResponseEntity<>("Name of a party should be unique for a single user", statusCodeCreator.notUniqueName());
             }
             Party newParty = new Party(name, description, broadcast_word, manager);
             newParty = partyRepository.saveAndFlush(newParty);
@@ -121,7 +159,7 @@ public class WebRestController {
             return new ResponseEntity<>("Created " + name, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseEntity<>("Request handle error", HttpStatus.I_AM_A_TEAPOT);
+            return new ResponseEntity<>("Request handle error", statusCodeCreator.serverError());
         }
     }
 

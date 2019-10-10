@@ -5,6 +5,7 @@ import com.I_am_here.Database.Entity.*;
 import com.I_am_here.Database.Repository.*;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.SecretDataLoader;
+import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.PartyData;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
@@ -33,9 +34,10 @@ public class AndroidRestController {
     private ManagerRepository managerRepository;
     private TokenParser tokenParser;
     private SecretDataLoader secretDataLoader;
+    private StatusCodeCreator statusCodeCreator;
 
 
-    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader) {
+    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator) {
         this.hostRepository = hostRepository;
         this.participatorRepository = participatorRepository;
         this.partyRepository = partyRepository;
@@ -43,6 +45,7 @@ public class AndroidRestController {
         this.managerRepository = managerRepository;
         this.tokenParser = tokenParser;
         this.secretDataLoader = secretDataLoader;
+        this.statusCodeCreator = statusCodeCreator;
     }
 
     /**
@@ -54,7 +57,7 @@ public class AndroidRestController {
      * @param account_type - account type (ACCOUNT_HOST, ACCOUNT_PARTICIPATOR)
      * @param name - name. Not necessary
      * @param email - email Not necessary
-     * @param phone_number - phone number. Not necessary
+     * @param phone_number - phone number.
      */
     @PostMapping("/app/register")
     public ResponseEntity<TokenData> register(
@@ -63,120 +66,153 @@ public class AndroidRestController {
             @RequestParam(name = "account_type") String account_type,
             @RequestParam(name = "name", defaultValue = "name", required = false) String name,
             @RequestParam(name = "email", defaultValue = "", required = false) String email,
-            @RequestParam(name = "phone_number", defaultValue = "", required = false) String phone_number){
-        TokenParser.ACCOUNT type = TokenParser.ACCOUNT.valueOf(account_type);
-        Account account = getAccount(UUID, password, type);
-        if(account != null){
-            return error(HttpStatus.CONFLICT);
-        }
-        Date now = Date.from(Instant.now());
+            @RequestParam(name = "phone_number") String phone_number){
+        try{
+            System.out.println("Got phone number: " + phone_number);
+            if(phone_number.length() == 11){
+                phone_number = "+" + phone_number;
+            }else if(phone_number.length() == 12){
+                phone_number = "+" + phone_number.substring(1, 12);
+            }else{
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            if(!phone_number.matches("[+][0-9]{11}")){
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            TokenParser.ACCOUNT type = TokenParser.ACCOUNT.valueOf(account_type);
+            Account account = getAccount(UUID, password, type);
+            if(account != null){
+                return error(statusCodeCreator.alreadyRegistered());
+            }
+            Date now = Date.from(Instant.now());
 
-        if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
-            TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
-            Host host = new Host(UUID, name, email, phone_number, password, data);
-            hostRepository.saveAndFlush(host);
-            return new ResponseEntity<TokenData>(data, HttpStatus.OK);
-        }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-            TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
-            Participator participator = new Participator(UUID, name, email, phone_number, password, data);
-            participatorRepository.saveAndFlush(participator);
+            if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
+                TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
+                Host host = new Host(UUID, name, email, phone_number, password, data);
+                hostRepository.saveAndFlush(host);
+                return new ResponseEntity<>(data, HttpStatus.OK);
+            }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+                TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
+                Participator participator = new Participator(UUID, name, email, phone_number, password, data);
+                participatorRepository.saveAndFlush(participator);
 
-            return new ResponseEntity<TokenData>(data, HttpStatus.OK);
-        }else{
-            return error(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(data, HttpStatus.OK);
+            }else{
+                return error(statusCodeCreator.missingAccountTypeField());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return error(statusCodeCreator.serverError());
         }
     }
 
     @PostMapping("/app/login")
     public ResponseEntity<TokenData> login(
-            @RequestParam String UUID,
+            @RequestParam String phone_number,
             @RequestParam String password,
             @RequestParam String account_type
     ){
-        Date now = Date.from(Instant.now());
-        if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
-            Host host = hostRepository.findByUuidAndPassword(UUID, password);
-            if(host == null){
-                error(HttpStatus.CONFLICT);
-            }
-            TokenData tokenData = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
-            host.setAccess_token(tokenData.getAccess_token());
-            host.setRefresh_token(tokenData.getRefresh_token());
-            hostRepository.saveAndFlush(host);
-            return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
-
-        }else if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name())){
-            Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
-            if(participator == null){
-                return error(HttpStatus.CONFLICT);
-            }
-            TokenData tokenData = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
-            participator.setAccess_token(tokenData.getAccess_token());
-            participator.setRefresh_token(tokenData.getRefresh_token());
-            participatorRepository.saveAndFlush(participator);
-            return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
-        }else{
-            return error(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @PostMapping("/app/update_credentials")
-    public ResponseEntity<String> updateHostCredentials(
-            @RequestHeader String access_token,
-            @RequestParam(name = "name", required = false, defaultValue = "") String name,
-            @RequestParam(name = "email", required = false, defaultValue = "")String email,
-            @RequestParam(name = "phone_number", required = false, defaultValue = "")String phone_number
-    ){
         try{
-            TokenParser.ACCOUNT account = tokenParser.getAccountType(access_token);
-            if(tokenParser.getType(access_token) != TokenParser.TYPE.ACCESS){
-                return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
-            }
-            String UUID = tokenParser.getUUID(access_token);
-            String password = tokenParser.getPassword(access_token);
-
-            if(account == TokenParser.ACCOUNT.ACCOUNT_HOST){
-                Host host = hostRepository.findByUuidAndPassword(UUID, password);
-                if( host == null){
-                    return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
-                }
-                if(name.length() > 1){
-                    host.setName(name);
-                }
-                if(email.length() > 1){
-                    host.setEmail(email);
-                }
-                if(phone_number.length() > 1){
-                    host.setPhone_number(phone_number);
-                }
-                hostRepository.saveAndFlush(host);
-                return new ResponseEntity<>("Updated", HttpStatus.OK);
-            }else if(account == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-                Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
-                if(participator == null){
-                    return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
-                }
-                if(name.length() > 1){
-                    participator.setName(name);
-                }
-                if(email.length() > 1){
-                    participator.setEmail(email);
-                }
-                if(phone_number.length() > 1){
-                    participator.setPhone_number(phone_number);
-                }
-                participatorRepository.saveAndFlush(participator);
-                return new ResponseEntity<>("Updated", HttpStatus.OK);
+            System.out.println("Got phone number: " + phone_number);
+            if(phone_number.length() == 11){
+                phone_number = "+" + phone_number;
+            }else if(phone_number.length() == 12){
+                phone_number = "+" + phone_number.substring(1, 12);
             }else{
-                return new ResponseEntity<String>("Wrong account type", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
             }
+            if(!phone_number.matches("[+][0-9]{11}")){
+                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
+            }
+            Date now = Date.from(Instant.now());
+            if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
+                Host host = hostRepository.findByPhoneNumberAndPassword(phone_number, password);
+                if(host == null){
+                    return error(statusCodeCreator.userNotFound());
+                }
+                TokenData tokenData = tokenParser.createTokenData(host.getUuid(), password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
+                host.setAccess_token(tokenData.getAccess_token());
+                host.setRefresh_token(tokenData.getRefresh_token());
+                hostRepository.saveAndFlush(host);
+                return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
 
-
+            }else if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name())){
+                Participator participator = participatorRepository.findByPhoneNumberAndPassword(phone_number, password);
+                if(participator == null){
+                    return error(statusCodeCreator.userNotFound());
+                }
+                TokenData tokenData = tokenParser.createTokenData(participator.getUuid(), password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
+                participator.setAccess_token(tokenData.getAccess_token());
+                participator.setRefresh_token(tokenData.getRefresh_token());
+                participatorRepository.saveAndFlush(participator);
+                return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
+            }else{
+                return error(statusCodeCreator.missingAccountTypeField());
+            }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseEntity<String>("TOKEN invalid", HttpStatus.NOT_ACCEPTABLE);
+            return error(statusCodeCreator.serverError());
         }
     }
+
+//    @PostMapping("/app/update_credentials")
+//    public ResponseEntity<String> updateHostCredentials(
+//            @RequestHeader String access_token,
+//            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+//            @RequestParam(name = "email", required = false, defaultValue = "")String email,
+//            @RequestParam(name = "phone_number", required = false, defaultValue = "")String phone_number
+//    ){
+//        try{
+//
+//            TokenParser.ACCOUNT account = tokenParser.getAccountType(access_token);
+//            if(tokenParser.getType(access_token) != TokenParser.TYPE.ACCESS){
+//                return new ResponseEntity<String>("TOKEN invalid", statusCodeCreator.tokenNotValid());
+//
+//            }
+//            String UUID = tokenParser.getUUID(access_token);
+//            String password = tokenParser.getPassword(access_token);
+//
+//            if(account == TokenParser.ACCOUNT.ACCOUNT_HOST){
+//                Host host = hostRepository.findByUuidAndPassword(UUID, password);
+//                if( host == null){
+//                    return new ResponseEntity<String>("TOKEN invalid",  statusCodeCreator.userNotFound());
+//                }
+//                if(name.length() > 1){
+//                    host.setName(name);
+//                }
+//                if(email.length() > 1){
+//                    host.setEmail(email);
+//                }
+//                if(phone_number.length() > 1){
+//                    host.setPhoneNumber(phone_number);
+//                }
+//                hostRepository.saveAndFlush(host);
+//                return new ResponseEntity<>("Updated", HttpStatus.OK);
+//            }else if(account == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
+//                Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
+//                if(participator == null){
+//                    return new ResponseEntity<String>("TOKEN invalid", statusCodeCreator.userNotFound());
+//                }
+//                if(name.length() > 1){
+//                    participator.setName(name);
+//                }
+//                if(email.length() > 1){
+//                    participator.setEmail(email);
+//                }
+//                if(phone_number.length() > 1){
+//                    participator.setPhoneNumber(phone_number);
+//                }
+//                participatorRepository.saveAndFlush(participator);
+//                return new ResponseEntity<>("Updated", HttpStatus.OK);
+//            }else{
+//                return new ResponseEntity<String>("Wrong account type", statusCodeCreator.missingAccountTypeField());
+//            }
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            return new ResponseEntity<String>("TOKEN invalid", statusCodeCreator.serverError());
+//        }
+//    }
 
     @GetMapping("/app/refresh")
     public ResponseEntity<TokenData> updateAccessToken(
@@ -186,7 +222,7 @@ public class AndroidRestController {
             TokenParser.ACCOUNT account_type = tokenParser.getAccountType(refresh_token);
             TokenParser.TYPE token_type = tokenParser.getType(refresh_token);
             if(token_type != TokenParser.TYPE.REFRESH){
-                return error(HttpStatus.BAD_REQUEST);
+                return error(statusCodeCreator.tokenNotValid());
             }
             String UUID = tokenParser.getUUID(refresh_token);
             String password = tokenParser.getPassword(refresh_token);
@@ -195,7 +231,7 @@ public class AndroidRestController {
             if (account_type == TokenParser.ACCOUNT.ACCOUNT_HOST){
                 Host host = hostRepository.findByUuidAndPassword(UUID, password);
                 if(host == null){
-                    return error(HttpStatus.NOT_ACCEPTABLE);
+                    return error(statusCodeCreator.userNotFound());
                 }
                 host.setAccess_token(access_token);
                 hostRepository.saveAndFlush(host);
@@ -203,17 +239,17 @@ public class AndroidRestController {
             }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
                 Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
                 if(participator == null){
-                    return error(HttpStatus.NOT_ACCEPTABLE);
+                    return error(statusCodeCreator.userNotFound());
                 }
                 participator.setAccess_token(access_token);
                 participatorRepository.saveAndFlush(participator);
                 return new ResponseEntity<>(tokenParser.getTokenData(participator), HttpStatus.OK);
             }else{
-                return error(HttpStatus.BAD_REQUEST);
+                return error(statusCodeCreator.missingAccountTypeField());
             }
         }catch (Exception e){
             e.printStackTrace();
-            return error(HttpStatus.BAD_REQUEST);
+            return error(statusCodeCreator.serverError());
         }
     }
 
@@ -222,13 +258,18 @@ public class AndroidRestController {
             @RequestHeader String access_token,
             @RequestParam String code_word
     ){
-        Date broadcast_start = Date.from(Instant.now().minusSeconds(secretDataLoader.getPartyBroadcastDuration()));
-        Set<Party> partyList = partyRepository.getAllByBroadcastWord(code_word);
-        if(partyList == null){
-            return new ResponseEntity<>(new HashSet<PartyData>(), HttpStatus.OK);
+        try{
+            Date broadcast_start = Date.from(Instant.now().minusSeconds(secretDataLoader.getPartyBroadcastDuration()));
+            Set<Party> partyList = partyRepository.getAllByBroadcastWord(code_word);
+            if(partyList == null){
+                return new ResponseEntity<>(new HashSet<PartyData>(), HttpStatus.OK);
+            }
+            return  new ResponseEntity<>(PartyData.createPartyData(partyList), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return  new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
-        System.out.println("BroadCast start: " + broadcast_start);
-        return  new ResponseEntity<>(PartyData.createPartyData(partyList), HttpStatus.OK);
+
     }
 
     @PostMapping("/app/participator/join_party")
@@ -237,28 +278,34 @@ public class AndroidRestController {
             @RequestParam String code_word,
             @RequestHeader String access_token
     ){
-        Party party = partyRepository.findByParty(party_id);
-        if(party == null){
-            return new ResponseEntity<>("Not found", HttpStatus.CONFLICT);
+        try{
+            Party party = partyRepository.findByParty(party_id);
+            if(party == null){
+                return new ResponseEntity<>("Not found", statusCodeCreator.userNotFound());
+            }
+            if(party.getBroadcastWord().equals(code_word)){
+                Participator participator = (Participator)getAccount(access_token);
+                System.out.println("Found party: " + party);
+                System.out.println("Found Participator: " + participator);
+
+                party.addParticipator(participator);
+                party = partyRepository.saveAndFlush(party);
+                System.out.println("Result party: " + party);
+                participator.addParty(party);
+                System.out.println("SEMI Result participator: " + participator);
+                participator = participatorRepository.saveAndFlush(participator);
+                System.out.println("Result participator: " + participator);
+
+
+                return new ResponseEntity<>("Joined repository " + party.getName(), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>("Code word mismatch", statusCodeCreator.codeWordMismatch());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
         }
-        if(party.getBroadcastWord().equals(code_word)){
-            Participator participator = (Participator)getAccount(access_token);
-            System.out.println("Found party: " + party);
-            System.out.println("Found Participator: " + participator);
 
-            party.addParticipator(participator);
-            party = partyRepository.saveAndFlush(party);
-            System.out.println("Result party: " + party);
-            participator.addParty(party);
-            System.out.println("SEMI Result participator: " + participator);
-            participator = participatorRepository.saveAndFlush(participator);
-            System.out.println("Result participator: " + participator);
-
-
-            return new ResponseEntity<>("Joined repository " + party.getName(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("Code word mismatch", HttpStatus.CONFLICT);
-        }
     }
 
     @GetMapping("/app/participator/my_party_list")

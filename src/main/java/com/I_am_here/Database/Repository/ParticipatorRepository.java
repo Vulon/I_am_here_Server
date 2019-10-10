@@ -8,6 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 public interface ParticipatorRepository extends JpaRepository<Participator, Integer> {
     @Query
     Participator findByUuidAndPassword(String UUID, String password);
+
+    @Query
+    Participator findByPhoneNumberAndPassword(String phone_number, String password);
+
+
     @Query
     Participator getByUuidAndPassword(String UUID, String password);
 

@@ -13,9 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -106,6 +104,7 @@ public class AndroidRestController {
         }
     }
 
+
     @PostMapping("/app/login")
     public ResponseEntity<TokenData> login(
             @RequestParam String phone_number,
@@ -154,6 +153,24 @@ public class AndroidRestController {
             return error(statusCodeCreator.serverError());
         }
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<HashMap<String, String>> checkIfRegistered(@RequestParam String UUID){
+        try{
+            Host host = hostRepository.getByUuid(UUID);
+            Manager manager = managerRepository.getByUuid(UUID);
+            Participator participator = participatorRepository.getByUuid(UUID);
+            HashMap<String, String> resp = new HashMap<>();
+            resp.put("host", (host == null ? "Not found" : "Found"));
+            resp.put("manager", (manager == null ? "Not found" : "Found"));
+            resp.put("participator", (participator == null ? "Not found" : "Found"));
+            return new ResponseEntity<>(resp, HttpStatus.OK);
+        }catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
 
 //    @PostMapping("/app/update_credentials")
 //    public ResponseEntity<String> updateHostCredentials(
@@ -269,7 +286,23 @@ public class AndroidRestController {
             e.printStackTrace();
             return  new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
+    }
 
+    @GetMapping("/app/participator/find_parties_by_code_words")
+    public ResponseEntity<Set<PartyData>> findPartiesByCodeWords(
+            @RequestHeader String access_token
+    ){
+        try{
+            Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            Set<Party> parties = partyRepository.getAllByBroadcastWordIn(participator.getCodeWordsStrings());
+            return new ResponseEntity<>(PartyData.createPartyData(parties), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
     }
 
     @PostMapping("/app/participator/join_party")
@@ -312,9 +345,38 @@ public class AndroidRestController {
     public ResponseEntity<Set<PartyData>> getPartiesByParticipator(
             @RequestHeader String access_token
     ){
+        try{
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
         Participator participator = (Participator)getAccount(access_token);
         return new ResponseEntity<>(PartyData.createPartyData(participator.getParties()), HttpStatus.OK);
     }
+
+    @PostMapping("/app/participator/upload_code_words")
+    public ResponseEntity<String> uploadCodeWordsForParticipator(
+            @RequestHeader String access_token,
+            @RequestBody List<String> code_words
+            ){
+        try{
+            Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>("", statusCodeCreator.userNotFound());
+            }
+            int initCount = participator.getCode_words().size();
+            participator.addCodeWords(code_words);
+            int endCount = participator.getCode_words().size();
+            return new ResponseEntity<>("Added " + Integer.toString(endCount - initCount), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return  new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+
+
 
     private Account getAccount(String access_token){
         try{

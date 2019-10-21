@@ -30,6 +30,9 @@ public class PartyData implements Serializable {
 
     public static Set<PartyData> createPartyData(Set<Party> partySet){
         HashSet<PartyData> partyData = new HashSet<>();
+        if(partySet == null){
+            return partyData;
+        }
         partySet.forEach(party -> partyData.add(new PartyData(party)));
         return partyData;
     }

@@ -6,7 +6,9 @@ import com.I_am_here.TransportableData.TokenData;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "participator")
@@ -69,6 +71,20 @@ public class Participator implements Account {
 
     public void addParty(Party party){
         this.parties.add(party);
+    }
+
+    public void addCodeWords(List<String> code_words){
+        code_words.forEach(s -> this.code_words.add(new Code_word_participator(s, this)));
+    }
+    public void removeCodeWords(List<String> code_words){
+        this.code_words = this.code_words.stream().filter(code_word_participator -> !code_words.contains(code_word_participator.getCode_word()))
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> getCodeWordsStrings(){
+        HashSet<String> code_word_strings = new HashSet<>();
+        this.code_words.forEach(code_word_participator -> code_word_strings.add(code_word_participator.getCode_word()));
+        return code_word_strings;
     }
 
     @Override

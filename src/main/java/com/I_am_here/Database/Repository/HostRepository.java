@@ -12,5 +12,8 @@ public interface HostRepository extends JpaRepository<Host, Integer> {
     Host getByUuidAndPassword(String UUID, String password);
 
     @Query
+    Host getByUuid(String UUID);
+
+    @Query
     Host findByPhoneNumberAndPassword(String phone_number, String password);
 }

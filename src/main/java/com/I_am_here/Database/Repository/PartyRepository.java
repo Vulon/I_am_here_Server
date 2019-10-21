@@ -19,4 +19,7 @@ public interface PartyRepository extends JpaRepository<Party, Integer> {
 
     @Query
     Party findByParty(Integer party_id);
+
+    @Query
+    Set<Party> getAllByBroadcastWordIn(Set<String> code_words);
 }

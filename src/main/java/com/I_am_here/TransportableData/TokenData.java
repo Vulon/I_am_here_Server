@@ -28,15 +28,15 @@ public class TokenData implements Serializable {
 
     private String refresh_token;
 
-    private Date access_token_expire_date;
+    private long access_token_expire_date;
 
-    private Date refresh_token_expire_date;
+    private long refresh_token_expire_date;
 
     public TokenData(String access_token, String refresh_token, Date access_token_expire_date, Date refresh_token_expire_date) {
         this.access_token = access_token;
         this.refresh_token = refresh_token;
-        this.access_token_expire_date = access_token_expire_date;
-        this.refresh_token_expire_date = refresh_token_expire_date;
+        this.access_token_expire_date = access_token_expire_date.getTime();
+        this.refresh_token_expire_date = refresh_token_expire_date.getTime();
     }
 
     public TokenData() {
@@ -49,20 +49,25 @@ public class TokenData implements Serializable {
 
         TokenData tokenData = (TokenData) o;
 
-        if (!access_token.equals(tokenData.access_token)) return false;
-        if (!refresh_token.equals(tokenData.refresh_token)) return false;
-        if (!access_token_expire_date.equals(tokenData.access_token_expire_date)) return false;
-        return refresh_token_expire_date.equals(tokenData.refresh_token_expire_date);
+        if (access_token_expire_date != tokenData.access_token_expire_date) return false;
+        if (refresh_token_expire_date != tokenData.refresh_token_expire_date) return false;
+        if (access_token != null ? !access_token.equals(tokenData.access_token) : tokenData.access_token != null)
+            return false;
+        return refresh_token != null ? refresh_token.equals(tokenData.refresh_token) : tokenData.refresh_token == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = access_token.hashCode();
-        result = 31 * result + refresh_token.hashCode();
-        result = 31 * result + access_token_expire_date.hashCode();
-        result = 31 * result + refresh_token_expire_date.hashCode();
+        int result = access_token != null ? access_token.hashCode() : 0;
+        result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
+        result = 31 * result + (int) (access_token_expire_date ^ (access_token_expire_date >>> 32));
+        result = 31 * result + (int) (refresh_token_expire_date ^ (refresh_token_expire_date >>> 32));
         return result;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 
     public String getAccess_token() {
@@ -81,19 +86,19 @@ public class TokenData implements Serializable {
         this.refresh_token = refresh_token;
     }
 
-    public Date getAccess_token_expire_date() {
+    public long getAccess_token_expire_date() {
         return access_token_expire_date;
     }
 
-    public void setAccess_token_expire_date(Date access_token_expire_date) {
+    public void setAccess_token_expire_date(long access_token_expire_date) {
         this.access_token_expire_date = access_token_expire_date;
     }
 
-    public Date getRefresh_token_expire_date() {
+    public long getRefresh_token_expire_date() {
         return refresh_token_expire_date;
     }
 
-    public void setRefresh_token_expire_date(Date refresh_token_expire_date) {
+    public void setRefresh_token_expire_date(long refresh_token_expire_date) {
         this.refresh_token_expire_date = refresh_token_expire_date;
     }
 

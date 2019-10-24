@@ -50,20 +50,9 @@ public class WebRestController {
      */
     @PostMapping("/web/login")
     @ResponseBody
-    public ResponseEntity<TokenData> login(@RequestParam String phone_number, @RequestParam String password){
+    public ResponseEntity<TokenData> login(@RequestHeader String UUID, @RequestHeader String password){
         try{
-            System.out.println("Got phone number: " + phone_number);
-            if(phone_number.length() == 11){
-                phone_number = "+" + phone_number;
-            }else if(phone_number.length() == 12){
-                phone_number = "+" + phone_number.substring(1, 12);
-            }else{
-                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
-            }
-            if(!phone_number.matches("[+][0-9]{11}")){
-                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
-            }
-            Manager manager = managerRepository.findByPhoneNumberAndPassword(phone_number, password);
+            Manager manager = managerRepository.findByUuidAndPassword(UUID, password);
             if(manager == null){
                 return new ResponseEntity<>(new TokenData(), statusCodeCreator.userNotFound());
             }
@@ -93,9 +82,9 @@ public class WebRestController {
      */
     @PostMapping("/web/register")
     public ResponseEntity<TokenData> register(
-            @RequestParam String UUID,
-            @RequestParam String password,
-            @RequestParam(name = "name", defaultValue = "Manager", required = false) String name,
+            @RequestHeader String UUID,
+            @RequestHeader String password,
+            @RequestParam(name = "name", defaultValue = "", required = false) String name,
             @RequestParam(name = "email", defaultValue = "", required = false) String email,
             @RequestParam(name = "phone_number") String phone_number){
         try{

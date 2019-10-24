@@ -37,4 +37,6 @@ public class StatusCodeCreator {
         return HttpStatus.CONFLICT;
     }
 
+    public HttpStatus subjectNotFound(){return HttpStatus.BAD_REQUEST;}
+
 }

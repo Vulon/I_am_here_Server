@@ -4,6 +4,7 @@ import com.I_am_here.Database.Account;
 import com.I_am_here.Database.Entity.*;
 import com.I_am_here.Database.Repository.*;
 import com.I_am_here.Security.TokenParser;
+import com.I_am_here.Services.QRParser;
 import com.I_am_here.Services.SecretDataLoader;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.PartyData;
@@ -34,9 +35,10 @@ public class AndroidRestController {
     private TokenParser tokenParser;
     private SecretDataLoader secretDataLoader;
     private StatusCodeCreator statusCodeCreator;
+    private QRParser qrParser;
 
 
-    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator) {
+    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator, QRParser qrParser) {
         this.hostRepository = hostRepository;
         this.participatorRepository = participatorRepository;
         this.partyRepository = partyRepository;
@@ -45,6 +47,7 @@ public class AndroidRestController {
         this.tokenParser = tokenParser;
         this.secretDataLoader = secretDataLoader;
         this.statusCodeCreator = statusCodeCreator;
+        this.qrParser = qrParser;
     }
 
     /**
@@ -148,7 +151,7 @@ public class AndroidRestController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<HashMap<String, String>> checkIfRegistered(@RequestParam String UUID){
+    public ResponseEntity<HashMap<String, String>> checkIfRegistered(@RequestHeader String UUID){
         try{
             Host host = hostRepository.getByUuid(UUID);
             Manager manager = managerRepository.getByUuid(UUID);
@@ -365,6 +368,31 @@ public class AndroidRestController {
         }catch (Exception e){
             e.printStackTrace();
             return  new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/host/create_qr_token")
+    public ResponseEntity<String> create_qr_token(
+            @RequestHeader String access_token,
+            @RequestParam Integer subject_id
+    ){
+        try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>("", statusCodeCreator.userNotFound());
+            }
+            Date now = Date.from(Instant.now());
+            Subject subject = subjectRepository.getBySubject_id(subject_id);
+            if(subject == null){
+                return new ResponseEntity<>("", statusCodeCreator.subjectNotFound());
+            }
+            String qr_token = qrParser.createQrToken(subject, host, now);
+            host.setQr_token(qr_token);
+            hostRepository.saveAndFlush(host);
+            return new ResponseEntity<>(qr_token, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
         }
     }
 

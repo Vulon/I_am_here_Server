@@ -43,6 +43,9 @@ public class SecretDataLoader {
         return seconds;
     }
 
+    public String getSecretQrTokenKey(){return env.getProperty("qr_token_key");}
+
+
 
     /**
      * Get secret_token_key property from application.properties

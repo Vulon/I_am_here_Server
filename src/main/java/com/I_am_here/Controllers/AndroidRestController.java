@@ -30,6 +30,7 @@ public class AndroidRestController {
     private ParticipatorRepository participatorRepository;
     private PartyRepository partyRepository;
     private SubjectRepository subjectRepository;
+    private VisitRepository visitRepository;
 
     private ManagerRepository managerRepository;
     private TokenParser tokenParser;
@@ -38,11 +39,12 @@ public class AndroidRestController {
     private QRParser qrParser;
 
 
-    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator, QRParser qrParser) {
+    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, VisitRepository visitRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator, QRParser qrParser) {
         this.hostRepository = hostRepository;
         this.participatorRepository = participatorRepository;
         this.partyRepository = partyRepository;
         this.subjectRepository = subjectRepository;
+        this.visitRepository = visitRepository;
         this.managerRepository = managerRepository;
         this.tokenParser = tokenParser;
         this.secretDataLoader = secretDataLoader;
@@ -390,6 +392,34 @@ public class AndroidRestController {
             host.setQr_token(qr_token);
             hostRepository.saveAndFlush(host);
             return new ResponseEntity<>(qr_token, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
+        }
+    }
+
+
+    @PostMapping("/app/participator/submit_qr_token")
+    public ResponseEntity<String> submitQrToken(
+            @RequestHeader String access_token,
+            @RequestParam String qr_token
+            ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
+            }
+            Host host = hostRepository.getByUuid(qrParser.getHostUUID(qr_token));
+            if(host == null){
+                return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
+            }
+            Subject subject = subjectRepository.getBySubject_id(qrParser.getSubjectID(qr_token));
+            if(subject == null){
+                return new ResponseEntity<>("Subject not found", statusCodeCreator.subjectNotFound());
+            }
+            Visit visit = new Visit(qrParser.getDate(qr_token), participator, host, subject);
+            visitRepository.saveAndFlush(visit);
+            return new ResponseEntity<>("Visit scored", HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>("Server error", statusCodeCreator.serverError());

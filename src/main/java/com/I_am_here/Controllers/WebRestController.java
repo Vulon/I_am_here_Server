@@ -1,11 +1,10 @@
 package com.I_am_here.Controllers;
 
-import com.I_am_here.Database.Entity.Host;
-import com.I_am_here.Database.Entity.Manager;
-import com.I_am_here.Database.Entity.Party;
-import com.I_am_here.Database.Entity.Subject;
+import com.I_am_here.Database.Account;
+import com.I_am_here.Database.Entity.*;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.PartyRepository;
+import com.I_am_here.Database.Repository.SubjectRepository;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.TokenData;
@@ -31,18 +30,18 @@ public class WebRestController {
 
     private ManagerRepository managerRepository;
     private PartyRepository partyRepository;
+    private SubjectRepository subjectRepository;
     private TokenParser tokenParser;
     private StatusCodeCreator statusCodeCreator;
 
 
-    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator) {
+    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator) {
         this.managerRepository = managerRepository;
         this.partyRepository = partyRepository;
+        this.subjectRepository = subjectRepository;
         this.tokenParser = tokenParser;
         this.statusCodeCreator = statusCodeCreator;
     }
-
-
 
     /**
      * This method is used to get new tokens. If everything is fine it should return response with new TokenData
@@ -151,6 +150,36 @@ public class WebRestController {
             return new ResponseEntity<>("Request handle error", statusCodeCreator.serverError());
         }
     }
+
+
+    @PostMapping("/web/create_subject")
+    public ResponseEntity<String> createSubject(
+            @RequestHeader String access_token,
+            @RequestParam String name,
+            @RequestParam long start_date,
+            @RequestParam long finish_date,
+            @RequestParam String code_word,
+            @RequestParam(required = false, defaultValue = "") String description,
+            @RequestParam(required=false, defaultValue = "0") int plan
+    ){
+        try{
+            Manager manager = managerRepository.findByUuid(tokenParser.getUUID(access_token));
+            if(manager == null){
+                return new ResponseEntity<>("Not found", statusCodeCreator.userNotFound());
+            }
+            Date start = new Date();
+            start.setTime(start_date);
+            Date finish = new Date();
+            finish.setTime(finish_date);
+            Subject subject = new Subject(name, plan, description, start, finish, code_word, manager);
+            subjectRepository.saveAndFlush(subject);
+            return new ResponseEntity<>("Subject " + name + " created", HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
+        }
+    }
+
 
 
 

@@ -2,7 +2,9 @@ package com.I_am_here.Database.Entity;
 
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -55,7 +57,18 @@ public class Subject {
     public Subject() {
     }
 
-
+    public Subject(String name, Integer plan, String description, Date start_date, Date finish_date, String broadcast_word, Manager manager) {
+        this.name = name;
+        this.plan = plan;
+        this.description = description;
+        this.start_date = start_date;
+        this.finish_date = finish_date;
+        this.broadcast_word = broadcast_word;
+        this.manager = manager;
+        this.broadcast_start = Date.from(Instant.now());
+        this.hosts = new HashSet<>();
+        this.parties = new HashSet<>();
+    }
 
     @Override
     public boolean equals(Object o) {

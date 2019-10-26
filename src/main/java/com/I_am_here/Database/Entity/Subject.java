@@ -13,7 +13,7 @@ public class Subject {
     @Id
     @Column(name = "subject_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer subject_id;
+    private Integer subjectId;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -26,18 +26,18 @@ public class Subject {
 
     @Column(name = "start_date")
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date start_date;
+    private Date startDate;
 
     @Column(name = "finish_date")
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date finish_date;
+    private Date finishDate;
 
     @Column(name = "broadcast_word")
-    private String broadcast_word;
+    private String broadcastWord;
 
     @Column(name = "broadcast_start")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date broadcast_start;
+    private Date broadcastStart;
 
 
     @ManyToOne
@@ -61,11 +61,11 @@ public class Subject {
         this.name = name;
         this.plan = plan;
         this.description = description;
-        this.start_date = start_date;
-        this.finish_date = finish_date;
-        this.broadcast_word = broadcast_word;
+        this.startDate = start_date;
+        this.finishDate = finish_date;
+        this.broadcastWord = broadcast_word;
         this.manager = manager;
-        this.broadcast_start = Date.from(Instant.now());
+        this.broadcastStart = Date.from(Instant.now());
         this.hosts = new HashSet<>();
         this.parties = new HashSet<>();
     }
@@ -77,14 +77,14 @@ public class Subject {
 
         Subject subject = (Subject) o;
 
-        if (!subject_id.equals(subject.subject_id)) return false;
+        if (!subjectId.equals(subject.subjectId)) return false;
         if (!name.equals(subject.name)) return false;
         if (plan != null ? !plan.equals(subject.plan) : subject.plan != null) return false;
         if (description != null ? !description.equals(subject.description) : subject.description != null) return false;
-        if (start_date != null ? !start_date.equals(subject.start_date) : subject.start_date != null) return false;
-        if (finish_date != null ? !finish_date.equals(subject.finish_date) : subject.finish_date != null) return false;
-        if (!broadcast_word.equals(subject.broadcast_word)) return false;
-        if (broadcast_start != null ? !broadcast_start.equals(subject.broadcast_start) : subject.broadcast_start != null)
+        if (startDate != null ? !startDate.equals(subject.startDate) : subject.startDate != null) return false;
+        if (finishDate != null ? !finishDate.equals(subject.finishDate) : subject.finishDate != null) return false;
+        if (!broadcastWord.equals(subject.broadcastWord)) return false;
+        if (broadcastStart != null ? !broadcastStart.equals(subject.broadcastStart) : subject.broadcastStart != null)
             return false;
         if (manager != null ? !manager.equals(subject.manager) : subject.manager != null) return false;
         if (hosts != null ? !hosts.equals(subject.hosts) : subject.hosts != null) return false;
@@ -94,39 +94,39 @@ public class Subject {
 
     @Override
     public int hashCode() {
-        int result = subject_id.hashCode();
+        int result = subjectId.hashCode();
         result = 31 * result + name.hashCode();
         result = 31 * result + (plan != null ? plan.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (start_date != null ? start_date.hashCode() : 0);
-        result = 31 * result + (finish_date != null ? finish_date.hashCode() : 0);
-        result = 31 * result + broadcast_word.hashCode();
-        result = 31 * result + (broadcast_start != null ? broadcast_start.hashCode() : 0);
+        result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
+        result = 31 * result + (finishDate != null ? finishDate.hashCode() : 0);
+        result = 31 * result + broadcastWord.hashCode();
+        result = 31 * result + (broadcastStart != null ? broadcastStart.hashCode() : 0);
         return result;
     }
 
-    public String getBroadcast_word() {
-        return broadcast_word;
+    public String getBroadcastWord() {
+        return broadcastWord;
     }
 
-    public void setBroadcast_word(String broadcast_word) {
-        this.broadcast_word = broadcast_word;
+    public void setBroadcastWord(String broadcastWord) {
+        this.broadcastWord = broadcastWord;
     }
 
-    public Date getBroadcast_start() {
-        return broadcast_start;
+    public Date getBroadcastStart() {
+        return broadcastStart;
     }
 
-    public void setBroadcast_start(Date broadcast_start) {
-        this.broadcast_start = broadcast_start;
+    public void setBroadcastStart(Date broadcastStart) {
+        this.broadcastStart = broadcastStart;
     }
 
-    public Integer getSubject_id() {
-        return subject_id;
+    public Integer getSubjectId() {
+        return subjectId;
     }
 
-    public void setSubject_id(Integer subject_id) {
-        this.subject_id = subject_id;
+    public void setSubjectId(Integer subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getName() {
@@ -153,20 +153,20 @@ public class Subject {
         this.description = description;
     }
 
-    public Date getStart_date() {
-        return start_date;
+    public Date getStartDate() {
+        return startDate;
     }
 
-    public void setStart_date(Date start_date) {
-        this.start_date = start_date;
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 
-    public Date getFinish_date() {
-        return finish_date;
+    public Date getFinishDate() {
+        return finishDate;
     }
 
-    public void setFinish_date(Date finish_date) {
-        this.finish_date = finish_date;
+    public void setFinishDate(Date finishDate) {
+        this.finishDate = finishDate;
     }
 
     public Manager getManager() {
@@ -196,14 +196,14 @@ public class Subject {
     @Override
     public String toString() {
         return "Subject{" +
-                "subject_id=" + subject_id +
+                "subjectId=" + subjectId +
                 ", name='" + name + '\'' +
                 ", plan=" + plan +
                 ", description='" + description + '\'' +
-                ", start_date=" + start_date +
-                ", finish_date=" + finish_date +
-                ", broadcast_word='" + broadcast_word + '\'' +
-                ", broadcast_start=" + broadcast_start +
+                ", startDate=" + startDate +
+                ", finishDate=" + finishDate +
+                ", broadcastWord='" + broadcastWord + '\'' +
+                ", broadcastStart=" + broadcastStart +
                 '}';
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Part;
 import java.time.Instant;
 import java.util.*;
 
@@ -61,7 +60,6 @@ public class AndroidRestController {
      * @param account_type - account type (ACCOUNT_HOST, ACCOUNT_PARTICIPATOR)
      * @param name - name. Not necessary
      * @param email - email Not necessary
-     * @param phone_number - phone number.
      */
     @PostMapping("/app/register")
     public ResponseEntity<TokenData> register(
@@ -69,20 +67,9 @@ public class AndroidRestController {
             @RequestHeader String password,
             @RequestParam(name = "account_type") String account_type,
             @RequestParam(name = "name", defaultValue = "", required = false) String name,
-            @RequestParam(name = "email", defaultValue = "", required = false) String email,
-            @RequestParam(name = "phone_number") String phone_number){
+            @RequestParam(name = "email", defaultValue = "", required = false) String email){
         try{
-            System.out.println("Got phone number: " + phone_number);
-            if(phone_number.length() == 11){
-                phone_number = "+" + phone_number;
-            }else if(phone_number.length() == 12){
-                phone_number = "+" + phone_number.substring(1, 12);
-            }else{
-                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
-            }
-            if(!phone_number.matches("[+][0-9]{11}")){
-                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
-            }
+
             TokenParser.ACCOUNT type = TokenParser.ACCOUNT.valueOf(account_type);
             Account account = getAccount(UUID, password, type);
             if(account != null){
@@ -92,12 +79,12 @@ public class AndroidRestController {
 
             if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
                 TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
-                Host host = new Host(UUID, name, email, phone_number, password, data);
+                Host host = new Host(UUID, name, email, password, data);
                 hostRepository.saveAndFlush(host);
                 return new ResponseEntity<>(data, HttpStatus.OK);
             }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
                 TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
-                Participator participator = new Participator(UUID, name, email, phone_number, password, data);
+                Participator participator = new Participator(UUID, name, email, password, data);
                 participatorRepository.saveAndFlush(participator);
 
                 return new ResponseEntity<>(data, HttpStatus.OK);
@@ -122,13 +109,12 @@ public class AndroidRestController {
             Date now = Date.from(Instant.now());
             if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
                 Host host = hostRepository.findByUuidAndPassword(UUID, password);
-
                 if(host == null){
                     return error(statusCodeCreator.userNotFound());
                 }
                 TokenData tokenData = tokenParser.createTokenData(host.getUuid(), password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
-                host.setAccess_token(tokenData.getAccess_token());
-                host.setRefresh_token(tokenData.getRefresh_token());
+                host.setAccessToken(tokenData.getAccess_token());
+                host.setRefreshToken(tokenData.getRefresh_token());
                 hostRepository.saveAndFlush(host);
                 return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
 
@@ -139,8 +125,8 @@ public class AndroidRestController {
                     return error(statusCodeCreator.userNotFound());
                 }
                 TokenData tokenData = tokenParser.createTokenData(participator.getUuid(), password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
-                participator.setAccess_token(tokenData.getAccess_token());
-                participator.setRefresh_token(tokenData.getRefresh_token());
+                participator.setAccessToken(tokenData.getAccess_token());
+                participator.setRefreshToken(tokenData.getRefresh_token());
                 participatorRepository.saveAndFlush(participator);
                 return new ResponseEntity<TokenData>(tokenData, HttpStatus.OK);
             }else{
@@ -170,64 +156,6 @@ public class AndroidRestController {
     }
 
 
-//    @PostMapping("/app/update_credentials")
-//    public ResponseEntity<String> updateHostCredentials(
-//            @RequestHeader String access_token,
-//            @RequestParam(name = "name", required = false, defaultValue = "") String name,
-//            @RequestParam(name = "email", required = false, defaultValue = "")String email,
-//            @RequestParam(name = "phone_number", required = false, defaultValue = "")String phone_number
-//    ){
-//        try{
-//
-//            TokenParser.ACCOUNT account = tokenParser.getAccountType(access_token);
-//            if(tokenParser.getType(access_token) != TokenParser.TYPE.ACCESS){
-//                return new ResponseEntity<String>("TOKEN invalid", statusCodeCreator.tokenNotValid());
-//
-//            }
-//            String UUID = tokenParser.getUUID(access_token);
-//            String password = tokenParser.getPassword(access_token);
-//
-//            if(account == TokenParser.ACCOUNT.ACCOUNT_HOST){
-//                Host host = hostRepository.findByUuidAndPassword(UUID, password);
-//                if( host == null){
-//                    return new ResponseEntity<String>("TOKEN invalid",  statusCodeCreator.userNotFound());
-//                }
-//                if(name.length() > 1){
-//                    host.setName(name);
-//                }
-//                if(email.length() > 1){
-//                    host.setEmail(email);
-//                }
-//                if(phone_number.length() > 1){
-//                    host.setPhoneNumber(phone_number);
-//                }
-//                hostRepository.saveAndFlush(host);
-//                return new ResponseEntity<>("Updated", HttpStatus.OK);
-//            }else if(account == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
-//                Participator participator = participatorRepository.findByUuidAndPassword(UUID, password);
-//                if(participator == null){
-//                    return new ResponseEntity<String>("TOKEN invalid", statusCodeCreator.userNotFound());
-//                }
-//                if(name.length() > 1){
-//                    participator.setName(name);
-//                }
-//                if(email.length() > 1){
-//                    participator.setEmail(email);
-//                }
-//                if(phone_number.length() > 1){
-//                    participator.setPhoneNumber(phone_number);
-//                }
-//                participatorRepository.saveAndFlush(participator);
-//                return new ResponseEntity<>("Updated", HttpStatus.OK);
-//            }else{
-//                return new ResponseEntity<String>("Wrong account type", statusCodeCreator.missingAccountTypeField());
-//            }
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return new ResponseEntity<String>("TOKEN invalid", statusCodeCreator.serverError());
-//        }
-//    }
 
     @GetMapping("/app/refresh")
     public ResponseEntity<TokenData> updateAccessToken(
@@ -248,7 +176,7 @@ public class AndroidRestController {
                 if(host == null){
                     return error(statusCodeCreator.userNotFound());
                 }
-                host.setAccess_token(access_token);
+                host.setAccessToken(access_token);
                 hostRepository.saveAndFlush(host);
                 return new ResponseEntity<>(tokenParser.getTokenData(host), HttpStatus.OK);
             }else if(account_type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
@@ -256,7 +184,7 @@ public class AndroidRestController {
                 if(participator == null){
                     return error(statusCodeCreator.userNotFound());
                 }
-                participator.setAccess_token(access_token);
+                participator.setAccessToken(access_token);
                 participatorRepository.saveAndFlush(participator);
                 return new ResponseEntity<>(tokenParser.getTokenData(participator), HttpStatus.OK);
             }else{
@@ -363,9 +291,9 @@ public class AndroidRestController {
             if(participator == null){
                 return new ResponseEntity<>("", statusCodeCreator.userNotFound());
             }
-            int initCount = participator.getCode_words().size();
+            int initCount = participator.getCodeWords().size();
             participator.addCodeWords(code_words);
-            int endCount = participator.getCode_words().size();
+            int endCount = participator.getCodeWords().size();
             return new ResponseEntity<>("Added " + Integer.toString(endCount - initCount), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -384,12 +312,12 @@ public class AndroidRestController {
                 return new ResponseEntity<>("", statusCodeCreator.userNotFound());
             }
             Date now = Date.from(Instant.now());
-            Subject subject = subjectRepository.getBySubject_id(subject_id);
+            Subject subject = subjectRepository.getBySubjectId(subject_id);
             if(subject == null){
                 return new ResponseEntity<>("", statusCodeCreator.subjectNotFound());
             }
             String qr_token = qrParser.createQrToken(subject, host, now);
-            host.setQr_token(qr_token);
+            host.setQrToken(qr_token);
             hostRepository.saveAndFlush(host);
             return new ResponseEntity<>(qr_token, HttpStatus.OK);
         }catch (Exception e){
@@ -413,7 +341,7 @@ public class AndroidRestController {
             if(host == null){
                 return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
             }
-            Subject subject = subjectRepository.getBySubject_id(qrParser.getSubjectID(qr_token));
+            Subject subject = subjectRepository.getBySubjectId(qrParser.getSubjectID(qr_token));
             if(subject == null){
                 return new ResponseEntity<>("Subject not found", statusCodeCreator.subjectNotFound());
             }
@@ -432,15 +360,15 @@ public class AndroidRestController {
             if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_HOST){
                 Host host = (Host)getAccount(refresh_token);
                 TokenData t = tokenParser.createTokenData(host.getUuid(), host.getPassword(), TokenParser.ACCOUNT.ACCOUNT_HOST,Date.from(Instant.now()));
-                host.setAccess_token(t.getAccess_token());
-                host.setRefresh_token(t.getRefresh_token());
+                host.setAccessToken(t.getAccess_token());
+                host.setRefreshToken(t.getRefresh_token());
                 hostRepository.saveAndFlush(host);
                 return new ResponseEntity<>("OK", HttpStatus.OK);
             }else if(tokenParser.getAccountType(refresh_token) == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
                 Participator p = (Participator)getAccount(refresh_token);
                 TokenData t = tokenParser.createTokenData(p.getUuid(), p.getPassword(), TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR,Date.from(Instant.now()));
-                p.setAccess_token(t.getAccess_token());
-                p.setRefresh_token(t.getRefresh_token());
+                p.setAccessToken(t.getAccess_token());
+                p.setRefreshToken(t.getRefresh_token());
                 participatorRepository.saveAndFlush(p);
                 return new ResponseEntity<>("OK", HttpStatus.OK);
             }else{

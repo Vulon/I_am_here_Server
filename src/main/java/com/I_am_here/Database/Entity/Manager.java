@@ -14,7 +14,7 @@ public class Manager implements Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "manager_id")
-    private Integer manager_id;
+    private Integer managerId;
 
     @Column(name = "manager_uuid", nullable = false)
     private String uuid;
@@ -25,17 +25,14 @@ public class Manager implements Account {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "phone_number", nullable = false, unique = true)
-    private String phoneNumber;
-
     @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "access_token")
-    private String access_token;
+    private String accessToken;
 
     @Column(name = "refresh_token")
-    private String refresh_token;
+    private String refreshToken;
 
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
@@ -53,14 +50,13 @@ public class Manager implements Account {
     public Manager() {
     }
 
-    public Manager(String uuid, String name, String email, String phoneNumber, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
+    public Manager(String uuid, String name, String email, String password, String access_token, String refresh_token, Set<Subject> subjects, Set<Host> hosts, Set<Party> parties) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
-        this.phoneNumber = phoneNumber;
         this.password = password;
-        this.access_token = access_token;
-        this.refresh_token = refresh_token;
+        this.accessToken = access_token;
+        this.refreshToken = refresh_token;
         this.subjects = subjects;
         this.hosts = hosts;
         this.parties = parties;
@@ -77,9 +73,6 @@ public class Manager implements Account {
 
 
 
-
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,14 +80,13 @@ public class Manager implements Account {
 
         Manager manager = (Manager) o;
 
-        if (!manager_id.equals(manager.manager_id)) return false;
+        if (!managerId.equals(manager.managerId)) return false;
         if (name != null ? !name.equals(manager.name) : manager.name != null) return false;
         if (email != null ? !email.equals(manager.email) : manager.email != null) return false;
-        if (!phoneNumber.equals(manager.phoneNumber)) return false;
         if (password != null ? !password.equals(manager.password) : manager.password != null) return false;
-        if (access_token != null ? !access_token.equals(manager.access_token) : manager.access_token != null)
+        if (accessToken != null ? !accessToken.equals(manager.accessToken) : manager.accessToken != null)
             return false;
-        if (refresh_token != null ? !refresh_token.equals(manager.refresh_token) : manager.refresh_token != null)
+        if (refreshToken != null ? !refreshToken.equals(manager.refreshToken) : manager.refreshToken != null)
             return false;
         if (subjects != null ? !subjects.equals(manager.subjects) : manager.subjects != null) return false;
         if (hosts != null ? !hosts.equals(manager.hosts) : manager.hosts != null) return false;
@@ -104,13 +96,12 @@ public class Manager implements Account {
 
     @Override
     public int hashCode() {
-        int result = manager_id.hashCode();
+        int result = managerId.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + phoneNumber.hashCode();
         result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
-        result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
+        result = 31 * result + (accessToken != null ? accessToken.hashCode() : 0);
+        result = 31 * result + (refreshToken != null ? refreshToken.hashCode() : 0);
         return result;
     }
 
@@ -123,12 +114,12 @@ public class Manager implements Account {
         this.uuid = uuid;
     }
 
-    public Integer getManager_id() {
-        return manager_id;
+    public Integer getManagerId() {
+        return managerId;
     }
 
-    public void setManager_id(Integer manager_id) {
-        this.manager_id = manager_id;
+    public void setManagerId(Integer managerId) {
+        this.managerId = managerId;
     }
 
     public String getName() {
@@ -147,14 +138,6 @@ public class Manager implements Account {
         this.email = email;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -163,20 +146,20 @@ public class Manager implements Account {
         this.password = password;
     }
 
-    public String getAccess_token() {
-        return access_token;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setAccess_token(String access_token) {
-        this.access_token = access_token;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
-    public String getRefresh_token() {
-        return refresh_token;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setRefresh_token(String refresh_token) {
-        this.refresh_token = refresh_token;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public Set<Subject> getSubjects() {
@@ -206,14 +189,13 @@ public class Manager implements Account {
     @Override
     public String toString() {
         return "Manager{" +
-                "manager_id=" + manager_id +
+                "managerId=" + managerId +
                 ", uuid='" + uuid + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
-                ", access_token='" + access_token + '\'' +
-                ", refresh_token='" + refresh_token + '\'' +
+                ", accessToken='" + accessToken + '\'' +
+                ", refreshToken='" + refreshToken + '\'' +
                 '}';
     }
 }

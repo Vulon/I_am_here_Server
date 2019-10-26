@@ -1,6 +1,5 @@
 package com.I_am_here.Controllers;
 
-import com.I_am_here.Database.Account;
 import com.I_am_here.Database.Entity.*;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.PartyRepository;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 
 /**
@@ -57,8 +55,8 @@ public class WebRestController {
             }
             TokenData data = tokenParser.createTokenData(manager.getUuid(), password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, Date.from(Instant.now()));
 
-            manager.setAccess_token(data.getAccess_token());
-            manager.setRefresh_token(data.getRefresh_token());
+            manager.setAccessToken(data.getAccess_token());
+            manager.setRefreshToken(data.getRefresh_token());
             managerRepository.saveAndFlush(manager);
             System.out.println("Entered manager: " + manager);
             return new ResponseEntity<TokenData>(data, HttpStatus.OK);
@@ -77,34 +75,22 @@ public class WebRestController {
      * server returns status code 409
      * @param name Not necessary
      * @param email Not necessary
-     * @param phone_number Not necessary
      */
     @PostMapping("/web/register")
     public ResponseEntity<TokenData> register(
             @RequestHeader String UUID,
             @RequestHeader String password,
             @RequestParam(name = "name", defaultValue = "", required = false) String name,
-            @RequestParam(name = "email", defaultValue = "", required = false) String email,
-            @RequestParam(name = "phone_number") String phone_number){
+            @RequestParam(name = "email", defaultValue = "", required = false) String email){
         try{
-            System.out.println("Got phone number: " + phone_number);
-            if(phone_number.length() == 11){
-                phone_number = "+" + phone_number;
-            }else if(phone_number.length() == 12){
-                phone_number = "+" + phone_number.substring(1, 12);
-            }else{
-                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
-            }
-            if(!phone_number.matches("[+][0-9]{11}")){
-                return new ResponseEntity<>(new TokenData(), statusCodeCreator.incorrectPhoneNumber());
-            }
+
             Manager manager = managerRepository.getByUuid(UUID);
             if(manager != null){
                 return new ResponseEntity<>(new TokenData(), statusCodeCreator.alreadyRegistered());
             }
             Date now = Date.from(Instant.now());
             TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_MANAGER, now);
-            manager = new Manager(UUID, name, email, phone_number, password, data.getAccess_token(), data.getRefresh_token(),
+            manager = new Manager(UUID, name, email, password, data.getAccess_token(), data.getRefresh_token(),
                     new HashSet<Subject>(), new HashSet<Host>(), new HashSet<Party>());
             System.out.println("Saving manager + " + manager.toString());
             managerRepository.saveAndFlush(manager);
@@ -136,12 +122,17 @@ public class WebRestController {
         try{
             String UUID = tokenParser.getUUID(access_token);
             Manager manager = managerRepository.getByUuid(UUID);
+            if(manager == null){
+                return new ResponseEntity<>("Incorrect token", statusCodeCreator.userNotFound());
+            }
             Party party = partyRepository.getByNameAndManager(name, manager);
             if(party != null){
                 return new ResponseEntity<>("Name of a party should be unique for a single user", statusCodeCreator.notUniqueName());
             }
             Party newParty = new Party(name, description, broadcast_word, manager);
+            System.out.println("newParty: " + newParty);
             newParty = partyRepository.saveAndFlush(newParty);
+            System.out.println("New Party afted saving: " + newParty);
             manager.addParty(newParty);
             managerRepository.saveAndFlush(manager);
             return new ResponseEntity<>("Created " + name, HttpStatus.OK);

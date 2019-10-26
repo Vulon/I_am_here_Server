@@ -10,7 +10,7 @@ public class Visit {
     @Id
     @Column(name = "visit_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer visit_id;
+    private Integer visitId;
 
     @Column(name = "date")
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -46,7 +46,7 @@ public class Visit {
 
         Visit visit = (Visit) o;
 
-        if (!visit_id.equals(visit.visit_id)) return false;
+        if (!visitId.equals(visit.visitId)) return false;
         if (date != null ? !date.equals(visit.date) : visit.date != null) return false;
         if (participator != null ? !participator.equals(visit.participator) : visit.participator != null) return false;
         if (host != null ? !host.equals(visit.host) : visit.host != null) return false;
@@ -56,7 +56,7 @@ public class Visit {
 
     @Override
     public int hashCode() {
-        int result = visit_id.hashCode();
+        int result = visitId.hashCode();
         result = 31 * result + (date != null ? date.hashCode() : 0);
         result = 31 * result + (participator != null ? participator.getUuid().hashCode() : 0);
         result = 31 * result + (host != null ? host.getUuid().hashCode() : 0);
@@ -64,12 +64,12 @@ public class Visit {
         return result;
     }
 
-    public Integer getVisit_id() {
-        return visit_id;
+    public Integer getVisitId() {
+        return visitId;
     }
 
-    public void setVisit_id(Integer visit_id) {
-        this.visit_id = visit_id;
+    public void setVisitId(Integer visitId) {
+        this.visitId = visitId;
     }
 
     public Date getDate() {

@@ -26,7 +26,7 @@ public class QRParser {
 
     public String createQrToken(Subject subject, Host host, Date now){
         return Jwts.builder()
-                .setSubject(subject.getSubject_id().toString())
+                .setSubject(subject.getSubjectId().toString())
                 .setIssuer(host.getUuid())
                 .setIssuedAt(now)
                 .signWith(SignatureAlgorithm.HS256, getEncodedQRTokenKey())

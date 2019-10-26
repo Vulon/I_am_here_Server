@@ -9,12 +9,12 @@ public class Code_word_participator {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "code_word_participator_id")
-    private Integer code_word_participator_id;
+    @Column(name = "participator_code_word_id")
+    private Integer codeWordId;
 
 
     @Column(name = "code_word", nullable = false)
-    private String code_word;
+    private String codeWord;
 
     @ManyToOne
     @JoinColumn(name = "participator_id")
@@ -23,8 +23,8 @@ public class Code_word_participator {
     public Code_word_participator() {
     }
 
-    public Code_word_participator(String code_word, Participator participator) {
-        this.code_word = code_word;
+    public Code_word_participator(String codeWord, Participator participator) {
+        this.codeWord = codeWord;
         this.participator = participator;
     }
 
@@ -35,33 +35,33 @@ public class Code_word_participator {
 
         Code_word_participator code_wordParticipator1 = (Code_word_participator) o;
 
-        if (!code_word_participator_id.equals(code_wordParticipator1.code_word_participator_id)) return false;
-        if (code_word != null ? !code_word.equals(code_wordParticipator1.code_word) : code_wordParticipator1.code_word != null) return false;
+        if (!codeWordId.equals(code_wordParticipator1.codeWordId)) return false;
+        if (codeWord != null ? !codeWord.equals(code_wordParticipator1.codeWord) : code_wordParticipator1.codeWord != null) return false;
         return participator.equals(code_wordParticipator1.participator);
 
     }
 
     @Override
     public int hashCode() {
-        int result = code_word_participator_id.hashCode();
-        result = 31 * result + (code_word != null ? code_word.hashCode() : 0);
+        int result = codeWordId.hashCode();
+        result = 31 * result + (codeWord != null ? codeWord.hashCode() : 0);
         return result;
     }
 
-    public Integer getCode_word_participator_id() {
-        return code_word_participator_id;
+    public Integer getCodeWordId() {
+        return codeWordId;
     }
 
-    public void setCode_word_participator_id(Integer code_word_participator_id) {
-        this.code_word_participator_id = code_word_participator_id;
+    public void setCodeWordId(Integer codeWordId) {
+        this.codeWordId = codeWordId;
     }
 
-    public String getCode_word() {
-        return code_word;
+    public String getCodeWord() {
+        return codeWord;
     }
 
-    public void setCode_word(String code_word) {
-        this.code_word = code_word;
+    public void setCodeWord(String codeWord) {
+        this.codeWord = codeWord;
     }
 
     public Participator getParticipator() {

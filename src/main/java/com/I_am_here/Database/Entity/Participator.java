@@ -17,7 +17,7 @@ public class Participator implements Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "participator_id")
-    private Integer participator_id;
+    private Integer participatorId;
 
     @Column(name = "participator_uuid", nullable = false)
     private String uuid;
@@ -28,21 +28,18 @@ public class Participator implements Account {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
     @Column(name = "password")
     private String password;
 
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "participator")
-    private Set<Code_word_participator> code_words;
+    private Set<Code_word_participator> codeWords;
 
     @Column(name = "access_token")
-    private String access_token;
+    private String accessToken;
 
     @Column(name = "refresh_token")
-    private String refresh_token;
+    private String refreshToken;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "participator")
     private Set<Visit> visits;
@@ -56,15 +53,14 @@ public class Participator implements Account {
     }
 
 
-    public Participator(String uuid, String name, String email, String phoneNumber, String password, TokenData tokenData) {
+    public Participator(String uuid, String name, String email, String password, TokenData tokenData) {
         this.uuid = uuid;
         this.name = name;
         this.email = email;
-        this.phoneNumber = phoneNumber;
         this.password = password;
-        this.code_words = new HashSet<>();
-        this.access_token = tokenData.getAccess_token();
-        this.refresh_token = tokenData.getRefresh_token();
+        this.codeWords = new HashSet<>();
+        this.accessToken = tokenData.getAccess_token();
+        this.refreshToken = tokenData.getRefresh_token();
         this.visits = new HashSet<>();
         this.parties = new HashSet<>();
     }
@@ -74,16 +70,16 @@ public class Participator implements Account {
     }
 
     public void addCodeWords(List<String> code_words){
-        code_words.forEach(s -> this.code_words.add(new Code_word_participator(s, this)));
+        code_words.forEach(s -> this.codeWords.add(new Code_word_participator(s, this)));
     }
     public void removeCodeWords(List<String> code_words){
-        this.code_words = this.code_words.stream().filter(code_word_participator -> !code_words.contains(code_word_participator.getCode_word()))
+        this.codeWords = this.codeWords.stream().filter(code_word_participator -> !code_words.contains(code_word_participator.getCodeWord()))
                 .collect(Collectors.toSet());
     }
 
     public Set<String> getCodeWordsStrings(){
         HashSet<String> code_word_strings = new HashSet<>();
-        this.code_words.forEach(code_word_participator -> code_word_strings.add(code_word_participator.getCode_word()));
+        this.codeWords.forEach(code_word_participator -> code_word_strings.add(code_word_participator.getCodeWord()));
         return code_word_strings;
     }
 
@@ -94,15 +90,14 @@ public class Participator implements Account {
 
         Participator that = (Participator) o;
 
-        if (!participator_id.equals(that.participator_id)) return false;
+        if (!participatorId.equals(that.participatorId)) return false;
         if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (email != null ? !email.equals(that.email) : that.email != null) return false;
-        if (!phoneNumber.equals(that.phoneNumber)) return false;
         if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        if (code_words != null ? !code_words.equals(that.code_words) : that.code_words != null) return false;
-        if (access_token != null ? !access_token.equals(that.access_token) : that.access_token != null) return false;
-        if (refresh_token != null ? !refresh_token.equals(that.refresh_token) : that.refresh_token != null)
+        if (codeWords != null ? !codeWords.equals(that.codeWords) : that.codeWords != null) return false;
+        if (accessToken != null ? !accessToken.equals(that.accessToken) : that.accessToken != null) return false;
+        if (refreshToken != null ? !refreshToken.equals(that.refreshToken) : that.refreshToken != null)
             return false;
         if (visits != null ? !visits.equals(that.visits) : that.visits != null) return false;
         return parties != null ? parties.equals(that.parties) : that.parties == null;
@@ -111,25 +106,24 @@ public class Participator implements Account {
 
     @Override
     public int hashCode() {
-        int result = participator_id.hashCode();
+        int result = participatorId.hashCode();
         result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + phoneNumber.hashCode();
         result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (access_token != null ? access_token.hashCode() : 0);
-        result = 31 * result + (refresh_token != null ? refresh_token.hashCode() : 0);
+        result = 31 * result + (accessToken != null ? accessToken.hashCode() : 0);
+        result = 31 * result + (refreshToken != null ? refreshToken.hashCode() : 0);
         return result;
     }
 
 
 
-    public Integer getParticipator_id() {
-        return participator_id;
+    public Integer getParticipatorId() {
+        return participatorId;
     }
 
-    public void setParticipator_id(Integer participator_id) {
-        this.participator_id = participator_id;
+    public void setParticipatorId(Integer participatorId) {
+        this.participatorId = participatorId;
     }
 
     public String getUuid() {
@@ -156,14 +150,6 @@ public class Participator implements Account {
         this.email = email;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -172,28 +158,28 @@ public class Participator implements Account {
         this.password = password;
     }
 
-    public Set<Code_word_participator> getCode_words() {
-        return code_words;
+    public Set<Code_word_participator> getCodeWords() {
+        return codeWords;
     }
 
-    public void setCode_words(Set<Code_word_participator> code_words) {
-        this.code_words = code_words;
+    public void setCodeWords(Set<Code_word_participator> codeWords) {
+        this.codeWords = codeWords;
     }
 
-    public String getAccess_token() {
-        return access_token;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setAccess_token(String access_token) {
-        this.access_token = access_token;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
-    public String getRefresh_token() {
-        return refresh_token;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setRefresh_token(String refresh_token) {
-        this.refresh_token = refresh_token;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public Set<Visit> getVisits() {
@@ -215,14 +201,13 @@ public class Participator implements Account {
     @Override
     public String toString() {
         return "Participator{" +
-                "participator_id=" + participator_id +
+                "participatorId=" + participatorId +
                 ", uuid='" + uuid + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
-                ", access_token='" + access_token + '\'' +
-                ", refresh_token='" + refresh_token + '\'' +
+                ", accessToken='" + accessToken + '\'' +
+                ", refreshToken='" + refreshToken + '\'' +
                 '}';
     }
 }

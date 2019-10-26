@@ -8,10 +8,10 @@ public class QR_key_word {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "qr_key_word_id")
-    private Integer qr_key_word_id;
+    private Integer qrKeyWordId;
 
     @Column(name = "key_word", nullable = false)
-    private String key_word;
+    private String keyWord;
 
     @ManyToOne
     @JoinColumn(name = "host_id")
@@ -24,8 +24,8 @@ public class QR_key_word {
     public QR_key_word() {
     }
 
-    public QR_key_word(String key_word, Host host, Subject subject) {
-        this.key_word = key_word;
+    public QR_key_word(String keyWord, Host host, Subject subject) {
+        this.keyWord = keyWord;
         this.host = host;
         this.subject = subject;
     }
@@ -37,8 +37,8 @@ public class QR_key_word {
 
         QR_key_word that = (QR_key_word) o;
 
-        if (!qr_key_word_id.equals(that.qr_key_word_id)) return false;
-        if (!key_word.equals(that.key_word)) return false;
+        if (!qrKeyWordId.equals(that.qrKeyWordId)) return false;
+        if (!keyWord.equals(that.keyWord)) return false;
         if (host != null ? !host.equals(that.host) : that.host != null) return false;
         return subject != null ? subject.equals(that.subject) : that.subject == null;
 
@@ -46,27 +46,27 @@ public class QR_key_word {
 
     @Override
     public int hashCode() {
-        int result = qr_key_word_id.hashCode();
-        result = 31 * result + key_word.hashCode();
+        int result = qrKeyWordId.hashCode();
+        result = 31 * result + keyWord.hashCode();
         result = 31 * result + (host != null ? host.getUuid().hashCode() : 0);
         result = 31 * result + (subject != null ? subject.getName().hashCode() : 0);
         return result;
     }
 
-    public Integer getQr_key_word_id() {
-        return qr_key_word_id;
+    public Integer getQrKeyWordId() {
+        return qrKeyWordId;
     }
 
-    public void setQr_key_word_id(Integer qr_key_word_id) {
-        this.qr_key_word_id = qr_key_word_id;
+    public void setQrKeyWordId(Integer qrKeyWordId) {
+        this.qrKeyWordId = qrKeyWordId;
     }
 
-    public String getKey_word() {
-        return key_word;
+    public String getKeyWord() {
+        return keyWord;
     }
 
-    public void setKey_word(String key_word) {
-        this.key_word = key_word;
+    public void setKeyWord(String keyWord) {
+        this.keyWord = keyWord;
     }
 
     public Host getHost() {

@@ -56,11 +56,11 @@ public class Token_AuthenticationProvider implements AuthenticationProvider {
                 auth.setAuthenticated(false);
                 return finish(auth);
             }
-            if(auth.getTokenType() == TokenParser.TYPE.ACCESS && !account.getAccess_token().equals(auth.getToken())){
+            if(auth.getTokenType() == TokenParser.TYPE.ACCESS && !account.getAccessToken().equals(auth.getToken())){
                 auth.setAuthenticated(false);
                 return finish(auth);
             }
-            if(auth.getTokenType() == TokenParser.TYPE.REFRESH && !account.getRefresh_token().equals(auth.getToken())){
+            if(auth.getTokenType() == TokenParser.TYPE.REFRESH && !account.getRefreshToken().equals(auth.getToken())){
                 auth.setAuthenticated(false);
                 return finish(auth);
             }

@@ -29,9 +29,6 @@ public class StatusCodeCreator {
         return HttpStatus.CONFLICT;
     }
 
-    public HttpStatus incorrectPhoneNumber(){
-        return HttpStatus.BAD_REQUEST;
-    }
 
     public HttpStatus notUniqueName(){
         return HttpStatus.CONFLICT;

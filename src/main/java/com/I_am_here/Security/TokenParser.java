@@ -108,8 +108,8 @@ public class TokenParser {
      */
 
     public TokenData getTokenData(Account account){
-        String access = account.getAccess_token();
-        String refresh = account.getRefresh_token();
+        String access = account.getAccessToken();
+        String refresh = account.getRefreshToken();
         TokenData tokenData = new TokenData(access, refresh, getExpirationDate(access), getExpirationDate(refresh));
         return tokenData;
     }

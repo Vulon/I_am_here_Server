@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.Query;
 public interface SubjectRepository extends JpaRepository<Subject, Integer> {
 
     @Query
-    Subject getBySubject_id(Integer id);
+    Subject getBySubjectId(Integer id);
 }

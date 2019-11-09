@@ -79,7 +79,14 @@ public class AnonymousAuthentication implements Authentication {
         return getAccountType();
     }
 
-
+    @Override
+    public String toString() {
+        return "AnonymousAuthentication{" +
+                "authType=" + authType +
+                ", accountType=" + accountType +
+                ", authenticated=" + authenticated +
+                '}';
+    }
 
     @Override
     @Deprecated

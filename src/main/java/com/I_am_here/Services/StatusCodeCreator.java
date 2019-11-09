@@ -29,7 +29,6 @@ public class StatusCodeCreator {
         return HttpStatus.CONFLICT;
     }
 
-
     public HttpStatus notUniqueName(){
         return HttpStatus.CONFLICT;
     }

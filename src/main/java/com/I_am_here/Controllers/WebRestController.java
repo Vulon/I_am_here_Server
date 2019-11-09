@@ -6,6 +6,7 @@ import com.I_am_here.Database.Repository.PartyRepository;
 import com.I_am_here.Database.Repository.SubjectRepository;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.StatusCodeCreator;
+import com.I_am_here.TransportableData.ExtendedPartyData;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashSet;
+import java.util.*;
 
 
 /**
@@ -59,6 +59,7 @@ public class WebRestController {
             manager.setRefreshToken(data.getRefresh_token());
             managerRepository.saveAndFlush(manager);
             System.out.println("Entered manager: " + manager);
+
             return new ResponseEntity<TokenData>(data, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -99,7 +100,25 @@ public class WebRestController {
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
+    }
 
+    @GetMapping("/web/credentials")
+    public ResponseEntity<HashMap> getManagerCredentials(
+            @RequestHeader String access_token
+    ){
+        try{
+            Manager manager = getManagerAccount(access_token);
+            if(manager == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            HashMap<String, String> data = new HashMap<>();
+            data.put("name", manager.getName());
+            data.put("email", manager.getEmail());
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
     }
 
 
@@ -143,6 +162,54 @@ public class WebRestController {
     }
 
 
+    @GetMapping("/web/parties")
+    public ResponseEntity<ExtendedPartyData> getPartyData(
+            @RequestHeader String access_token
+    ){
+        try{
+            String UUID = tokenParser.getUUID(access_token);
+            Manager manager = managerRepository.getByUuid(UUID);
+            if(manager == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+
+    @GetMapping("/web/refresh")
+    public ResponseEntity<TokenData> updateAccessToken(
+            @RequestHeader String refresh_token
+    ){
+        try{
+            String UUID = tokenParser.getUUID(refresh_token);
+            String password = tokenParser.getPassword(refresh_token);
+            TokenParser.ACCOUNT account_type = tokenParser.getAccountType(refresh_token);
+
+            String access_token = tokenParser.createToken(UUID, password, TokenParser.TYPE.ACCESS, Date.from(Instant.now()), account_type);
+            if (account_type == TokenParser.ACCOUNT.ACCOUNT_MANAGER) {
+                Manager manager = managerRepository.getByUuidAndPassword(UUID, password);
+                if (manager == null) {
+                    return error(statusCodeCreator.userNotFound());
+                }
+                manager.setAccessToken(access_token);
+                managerRepository.saveAndFlush(manager);
+
+                return new ResponseEntity<>(tokenParser.getTokenData(manager), HttpStatus.OK);
+            }else{
+                return error(statusCodeCreator.missingAccountTypeField());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return error(statusCodeCreator.serverError());
+        }
+    }
+
+
     @PostMapping("/web/create_subject")
     public ResponseEntity<String> createSubject(
             @RequestHeader String access_token,
@@ -173,6 +240,11 @@ public class WebRestController {
 
 
 
+    private Manager getManagerAccount(String access_token){
+        String uuid = tokenParser.getUUID(access_token);
+        Manager manager = managerRepository.getByUuid(uuid);
+        return  manager;
+    }
 
 
     /**
@@ -184,5 +256,8 @@ public class WebRestController {
     public ResponseEntity<String> logout(){
         SecurityContextHolder.clearContext();
         return new ResponseEntity<String>("Logged out", HttpStatus.OK);
+    }
+    private ResponseEntity<TokenData> error(HttpStatus status){
+        return new ResponseEntity<TokenData>(new TokenData(), status);
     }
 }

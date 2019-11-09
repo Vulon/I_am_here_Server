@@ -58,27 +58,40 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
+        if(!httpServletResponse.containsHeader("Access-Control-Allow-Origin")){
+            httpServletResponse.addHeader("Access-Control-Allow-Method", "POST");
+            httpServletResponse.addHeader("Access-Control-Allow-Method", "GET");
+            httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
+            httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://localhost");
+            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-origin, password, uuid, access_token, www-authenticate");
+
+        }
+
 
         String path =  httpServletRequest.getRequestURI();
         System.out.println("Filter initiated for path " + path);
-
+        System.out.println(httpServletRequest);
         try{
-            if(!filterUnsecuredWebPath(path)){
-                if(!filterUnsecuredAppPath(path, httpServletRequest)){
-                    if(!filterRefreshPath(path, httpServletRequest)){
-                        String access_token = httpServletRequest.getHeader("access_token");
-                        if(!filterAccessWebPath(path, access_token)){
-                            if(!filterAccessAppPath(path, access_token)){
-                                clearAuth();
+
+                if(!filterUnsecuredWebPath(path)){
+                    if(!filterUnsecuredAppPath(path, httpServletRequest)){
+                        if(!filterRefreshPath(path, httpServletRequest)){
+                            String access_token = httpServletRequest.getHeader("access_token");
+                            if(!filterAccessWebPath(path, access_token)){
+                                if(!filterAccessAppPath(path, access_token)){
+                                    System.out.println("Path was not filtered");
+                                    clearAuth();
+                                }
                             }
                         }
                     }
                 }
-            }
+
         }catch (Exception e){
             e.printStackTrace();
             clearAuth();
         }
+        System.out.println("Filter finished");
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
@@ -97,6 +110,7 @@ public class TokenFilter extends OncePerRequestFilter {
     private void clearAuth(){
         SecurityContextHolder.clearContext();
     }
+
 
     /**
      * Check if a user tries to access /web/ (login/register) page, in that case create Anonymous Authentication
@@ -117,6 +131,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 AnonymousAuthentication authentication = new AnonymousAuthentication(AnonymousAuthentication.AuthType.REGISTER,
                         TokenParser.ACCOUNT.ACCOUNT_MANAGER, true);
                 saveAuth(authentication);
+                System.out.println("Authentication created for register path" + authentication.toString());
                 return true;
             }
             case "/web/logout":{
@@ -216,6 +231,8 @@ public class TokenFilter extends OncePerRequestFilter {
     private boolean filterAccessWebPath(String path, String access_token) {
         if(!web_pattern.matcher(path).matches()) {
             return false;
+        }else{
+            System.out.println("Token filter matched web access path");
         }
         if(access_token == null){
             return false;

@@ -39,11 +39,6 @@ public class Manager implements Account {
     private Set<Subject> subjects;
 
 
-    @ManyToMany
-    @JoinTable(name = "manager_host", joinColumns =
-    @JoinColumn(name = "manager_id"), inverseJoinColumns = @JoinColumn(name = "host_id"))
-    private Set<Host> hosts;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
     private Set<Party> parties;
 
@@ -58,7 +53,6 @@ public class Manager implements Account {
         this.accessToken = access_token;
         this.refreshToken = refresh_token;
         this.subjects = subjects;
-        this.hosts = hosts;
         this.parties = parties;
     }
 
@@ -89,7 +83,6 @@ public class Manager implements Account {
         if (refreshToken != null ? !refreshToken.equals(manager.refreshToken) : manager.refreshToken != null)
             return false;
         if (subjects != null ? !subjects.equals(manager.subjects) : manager.subjects != null) return false;
-        if (hosts != null ? !hosts.equals(manager.hosts) : manager.hosts != null) return false;
         return parties != null ? parties.equals(manager.parties) : manager.parties == null;
 
     }
@@ -168,14 +161,6 @@ public class Manager implements Account {
 
     public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
-    }
-
-    public Set<Host> getHosts() {
-        return hosts;
-    }
-
-    public void setHosts(Set<Host> hosts) {
-        this.hosts = hosts;
     }
 
     public Set<Party> getParties() {

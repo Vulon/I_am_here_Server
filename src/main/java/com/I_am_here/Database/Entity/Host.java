@@ -46,10 +46,7 @@ public class Host implements Account {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
     private Set<Code_word_host> codeWords;
 
-    @ManyToMany
-    @JoinTable(name = "manager_host", joinColumns =
-    @JoinColumn(name = "host_id"), inverseJoinColumns = @JoinColumn(name = "manager_id"))
-    private Set<Manager> managers;
+
 
 
     @ManyToMany
@@ -70,7 +67,6 @@ public class Host implements Account {
         this.qrToken = "";
         this.qrKeyWords = new HashSet<>();
         this.codeWords = new HashSet<>();
-        this.managers = new HashSet<>();
         this.subjects = new HashSet<>();
     }
 
@@ -84,7 +80,6 @@ public class Host implements Account {
         this.qrToken = qrToken;
         this.qrKeyWords = qrKeyWords;
         this.codeWords = codeWords;
-        this.managers = managers;
         this.subjects = subjects;
     }
 
@@ -106,7 +101,6 @@ public class Host implements Account {
         if (qrToken != null ? !qrToken.equals(host.qrToken) : host.qrToken != null) return false;
         if (qrKeyWords != null ? !qrKeyWords.equals(host.qrKeyWords) : host.qrKeyWords != null) return false;
         if (codeWords != null ? !codeWords.equals(host.codeWords) : host.codeWords != null) return false;
-        if (managers != null ? !managers.equals(host.managers) : host.managers != null) return false;
         return subjects != null ? subjects.equals(host.subjects) : host.subjects == null;
 
     }
@@ -200,14 +194,6 @@ public class Host implements Account {
 
     public void setQrKeyWords(Set<QR_key_word> qrKeyWords) {
         this.qrKeyWords = qrKeyWords;
-    }
-
-    public Set<Manager> getManagers() {
-        return managers;
-    }
-
-    public void setManagers(Set<Manager> managers) {
-        this.managers = managers;
     }
 
     public Set<Subject> getSubjects() {

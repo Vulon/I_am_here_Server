@@ -22,4 +22,7 @@ public interface PartyRepository extends JpaRepository<Party, Integer> {
 
     @Query
     Set<Party> getAllByBroadcastWordIn(Set<String> code_words);
+
+    @Query
+    Set<Party> getAllByManager(Manager manager);
 }

@@ -163,7 +163,7 @@ public class WebRestController {
 
 
     @GetMapping("/web/parties")
-    public ResponseEntity<ExtendedPartyData> getPartyData(
+    public ResponseEntity<ArrayList<ExtendedPartyData>> getPartyData(
             @RequestHeader String access_token
     ){
         try{
@@ -172,8 +172,12 @@ public class WebRestController {
             if(manager == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
+            ArrayList<ExtendedPartyData> list = new ArrayList<>();
+            partyRepository.getAllByManager(manager).forEach(party -> {
+                list.add(new ExtendedPartyData(party));
+            });
 
-            return new ResponseEntity<>(null, HttpStatus.OK);
+            return new ResponseEntity<>(list, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());

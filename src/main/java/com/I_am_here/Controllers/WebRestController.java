@@ -213,53 +213,43 @@ public class WebRestController {
     @PostMapping("/web/party")
     public ResponseEntity<String> postOrUpdateParty(
             @RequestHeader String access_token,
-            @RequestBody HashMap<String, String> party_data //id, name, description, code, subjects(id array)
+            @RequestBody ExtendedPartyData party_data
     ){
         try{
             Manager manager = getManagerAccount(access_token);
             if(manager == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
-            Integer id = Integer.parseInt(party_data.get("id"));
-            Party party = partyRepository.getByParty(id);
+            System.out.println("Got the party data:" + party_data.toString());
+            Party party = partyRepository.getByParty(party_data.getId());
             String response;
             if(party == null){
-                response = "Created new party";
-                party = new Party(party_data.get("name"), party_data.get("description"), party_data.get("code"), manager);
-                String  subjectsString = party_data.get("subjects");
-                subjectsString = subjectsString.replace('[', ' ');
-                subjectsString = subjectsString.replace(']', ' ');
-                subjectsString = subjectsString.trim();
-                String[] idArray = subjectsString.split(",");
-                int[] ids = new int[idArray.length];
-                for (int i = 0; i < idArray.length; i++) {
-                    ids[i] = Integer.parseInt(idArray[i].trim());
-                }
-                for (int i = 0; i < ids.length; i++) {
-                    party.addSubject(subjectRepository.getBySubjectId(ids[i]));
-                }
-
+                response = "Created new party:   ";
+                party = new Party(party_data.getName(), party_data.getDescription(), party_data.getCode(), manager);
+                Party finalParty = party;
+                party_data.getSubjects().forEach(stringStringHashMap -> {
+                    Integer id = Integer.parseInt(stringStringHashMap.get("subjectId"));
+                    Subject subject = subjectRepository.getBySubjectId(id);
+                    finalParty.addSubject(subject);
+                });
+                party = finalParty;
             }else{
-                response = "Updated party";
-                party.setName(party_data.get("name"));
-                party.setDescription(party_data.get("description"));
-                party.setBroadcastWord(party_data.get("code"));
-                String  subjectsString = party_data.get("subjects");
+                response = "Updated party:   ";
+                party.setName(party_data.getName());
+                party.setDescription(party_data.getDescription());
+                party.setBroadcastWord(party_data.getCode());
                 party.setSubjects(new HashSet<>());
-                subjectsString = subjectsString.replace('[', ' ');
-                subjectsString = subjectsString.replace(']', ' ');
-                subjectsString = subjectsString.trim();
-                String[] idArray = subjectsString.split(",");
-                int[] ids = new int[idArray.length];
-                for (int i = 0; i < idArray.length; i++) {
-                    ids[i] = Integer.parseInt(idArray[i].trim());
-                }
-                for (int i = 0; i < ids.length; i++) {
-                    party.addSubject(subjectRepository.getBySubjectId(ids[i]));
-                }
+                Party finalParty = party;
+                party_data.getSubjects().forEach(stringStringHashMap -> {
+                    Integer id = Integer.parseInt(stringStringHashMap.get("subjectId"));
+                    Subject subject = subjectRepository.getBySubjectId(id);
+                    finalParty.addSubject(subject);
+                });
+                party = finalParty;
             }
+
             party = partyRepository.saveAndFlush(party);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response + party.toString(), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());

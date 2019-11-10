@@ -39,25 +39,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Security/TokenFilter.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2366">
-              <caret line="81" column="29" selection-start-line="81" selection-start-column="28" selection-end-line="81" selection-end-column="29" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="docComment;method#filterRefreshPath#0;class#TokenFilter#0" />
-                <element signature="method#filterAccessAppPath#0;class#TokenFilter#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/WebRestController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="579">
-              <caret line="258" column="17" lean-forward="true" selection-start-line="258" selection-start-column="17" selection-end-line="258" selection-end-column="17" />
+            <state relative-caret-position="200">
+              <caret line="237" column="52" lean-forward="true" selection-start-line="237" selection-start-column="52" selection-end-line="237" selection-end-column="52" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -68,10 +54,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/ExtendedPartyData.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="211">
-              <caret line="120" column="61" selection-start-line="120" selection-start-column="61" selection-end-line="120" selection-end-column="61" />
+            <state relative-caret-position="227">
+              <caret line="38" column="21" lean-forward="true" selection-start-line="38" selection-start-column="21" selection-end-line="38" selection-end-column="30" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#3696#3697#0" expanded="true" />
                 <element signature="e#3727#3728#0" expanded="true" />
                 <element signature="e#3803#3804#0" expanded="true" />
                 <element signature="e#3843#3844#0" expanded="true" />
@@ -100,7 +87,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Repository/PartyRepository.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="403">
-              <caret line="31" column="4" selection-start-line="31" selection-start-column="4" selection-end-line="31" selection-end-column="4" />
+              <caret line="31" selection-start-line="31" selection-end-line="31" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -122,11 +109,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="506" column="12" selection-start-line="506" selection-start-column="12" selection-end-line="506" selection-end-column="12" />
+            <state relative-caret-position="86">
+              <caret line="506" selection-start-line="506" selection-end-line="506" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -138,7 +125,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Participator.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="166">
-              <caret line="79" column="4" lean-forward="true" selection-start-line="79" selection-start-column="4" selection-end-line="83" selection-end-column="5" />
+              <caret line="79" column="4" selection-start-line="79" selection-start-column="4" selection-end-line="83" selection-end-column="5" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -200,7 +187,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Security/Access_token_AuthenticationToken.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Security/Access_token_Authentication.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Application.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Security/Token_AuthenticationProvider.java" />
@@ -244,13 +230,14 @@
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Security/TokenFilter.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/ExtendedPartyData.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Party.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/WebRestController.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Participator.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Repository/SubjectRepository.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Subject.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Host.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Repository/PartyRepository.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/SubjectData.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/WebRestController.java" />
       </list>
     </option>
   </component>
@@ -357,16 +344,6 @@
               <item name="I_am_here" type="462c0819:PsiDirectoryNode" />
               <item name="Database" type="462c0819:PsiDirectoryNode" />
               <item name="Entity" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="I_am_here_Server" type="b2602c69:ProjectViewProjectNode" />
-              <item name="I_am_here_Server" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="I_am_here" type="462c0819:PsiDirectoryNode" />
-              <item name="Database" type="462c0819:PsiDirectoryNode" />
-              <item name="Repository" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="I_am_here_Server" type="b2602c69:ProjectViewProjectNode" />
@@ -519,12 +496,12 @@
       <workItem from="1573251798279" duration="556000" />
       <workItem from="1573288251152" duration="27541000" />
       <workItem from="1573345990570" duration="1670000" />
-      <workItem from="1573386710017" duration="13878000" />
+      <workItem from="1573386710017" duration="17369000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="198396000" />
+    <option name="totallyTimeSpent" value="201887000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -539,8 +516,8 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5018182" visible="true" weight="0.3297587" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.49818182" side_tool="true" visible="true" weight="0.3297587" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.824611" visible="true" weight="0.3297587" />
+      <window_info id="Structure" order="1" sideWeight="0.17538896" side_tool="true" visible="true" weight="0.3297587" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
       <window_info id="Capture Tool" order="4" />
@@ -549,7 +526,7 @@
       <window_info id="Web" order="7" sideWeight="0.40876946" side_tool="true" weight="0.29490617" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.4115983" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.22206506" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.301273" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39886847" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -578,16 +555,6 @@
     <option name="version" value="1" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Services/SecretDataLoader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="672">
-          <caret line="46" selection-start-line="46" selection-end-line="46" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="192">
@@ -849,21 +816,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/ExtendedPartyData.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="120" column="61" selection-start-line="120" selection-start-column="61" selection-end-line="120" selection-end-column="61" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#3727#3728#0" expanded="true" />
-            <element signature="e#3803#3804#0" expanded="true" />
-            <element signature="e#3843#3844#0" expanded="true" />
-            <element signature="e#3911#3912#0" expanded="true" />
-            <element signature="e#3947#3948#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Party.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -876,20 +828,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/WebRestController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="579">
-          <caret line="258" column="17" lean-forward="true" selection-start-line="258" selection-start-column="17" selection-end-line="258" selection-end-column="17" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Entity/Participator.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="166">
-          <caret line="79" column="4" lean-forward="true" selection-start-line="79" selection-start-column="4" selection-end-line="83" selection-end-column="5" />
+          <caret line="79" column="4" selection-start-line="79" selection-start-column="4" selection-end-line="83" selection-end-column="5" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -933,7 +875,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Repository/PartyRepository.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="403">
-          <caret line="31" column="4" selection-start-line="31" selection-start-column="4" selection-end-line="31" selection-end-column="4" />
+          <caret line="31" selection-start-line="31" selection-end-line="31" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -942,8 +884,41 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="506" column="12" selection-start-line="506" selection-start-column="12" selection-end-line="506" selection-end-column="12" />
+        <state relative-caret-position="86">
+          <caret line="506" selection-start-line="506" selection-end-line="506" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/SubjectData.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="256">
+          <caret line="16" column="12" selection-start-line="16" selection-start-column="12" selection-end-line="16" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/ExtendedPartyData.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="38" column="21" lean-forward="true" selection-start-line="38" selection-start-column="21" selection-end-line="38" selection-end-column="30" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#3696#3697#0" expanded="true" />
+            <element signature="e#3727#3728#0" expanded="true" />
+            <element signature="e#3803#3804#0" expanded="true" />
+            <element signature="e#3843#3844#0" expanded="true" />
+            <element signature="e#3911#3912#0" expanded="true" />
+            <element signature="e#3947#3948#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/WebRestController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="237" column="52" lean-forward="true" selection-start-line="237" selection-start-column="52" selection-end-line="237" selection-end-column="52" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

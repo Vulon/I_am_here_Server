@@ -63,6 +63,10 @@ public class Party {
         this.participators.add(p);
     }
 
+    public void addSubject(Subject s){
+        this.subjects.add(s);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

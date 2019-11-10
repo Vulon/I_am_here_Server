@@ -63,8 +63,8 @@ public class TokenFilter extends OncePerRequestFilter {
             httpServletResponse.addHeader("Access-Control-Allow-Method", "GET");
             httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
             httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://localhost");
-            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-origin, password, uuid, access_token, www-authenticate");
-
+            //httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://92.243.164.53");
+            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-origin, password, uuid, access_token, refresh_token, www-authenticate");
         }
 
 

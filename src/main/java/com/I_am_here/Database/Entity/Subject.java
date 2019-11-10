@@ -57,6 +57,10 @@ public class Subject {
     public Subject() {
     }
 
+    public void addHost(Host host){
+        hosts.add(host);
+    }
+
     public Subject(String name, Integer plan, String description, Date start_date, Date finish_date, String broadcast_word, Manager manager) {
         this.name = name;
         this.plan = plan;

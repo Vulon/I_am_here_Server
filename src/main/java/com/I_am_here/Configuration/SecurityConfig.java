@@ -56,12 +56,12 @@ public class SecurityConfig{
             http.csrf().disable().cors().disable()
                     .addFilterAfter(new TokenFilter(), UsernamePasswordAuthenticationFilter.class)
                     .authorizeRequests()
-                    .antMatchers("/app/register", "/app/login", "/check").permitAll()
+                    .antMatchers("/app/register", "/app/login", "/check", "/app/logout").permitAll()
                     .and()
                     .authorizeRequests()
                     .antMatchers("/app/host/*").hasAuthority("ACCOUNT_HOST")
-                    .antMatchers("/app/participator/*").hasAuthority("ACCOUNT_PARTICIPATOR")
-            .and().requiresChannel().antMatchers("/app/**", "/check").requiresSecure();
+                    .antMatchers("/app/participator/*").hasAuthority("ACCOUNT_PARTICIPATOR");
+            //.and().requiresChannel().antMatchers("/app/**", "/check").requiresSecure();
         }
     }
 
@@ -93,9 +93,8 @@ public class SecurityConfig{
                     .and().authorizeRequests()
                     .antMatchers("/web/*").hasAuthority("ACCOUNT_MANAGER")
                     .and().httpBasic()
-                    .authenticationEntryPoint(entryPoint)
-            .and().requiresChannel().antMatchers("/web/*").requiresSecure()
-            ;
+                    .authenticationEntryPoint(entryPoint);
+            //.and().requiresChannel().antMatchers("/web/*").requiresSecure();
         }
 
     }

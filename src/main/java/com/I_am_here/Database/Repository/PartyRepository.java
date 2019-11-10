@@ -25,4 +25,9 @@ public interface PartyRepository extends JpaRepository<Party, Integer> {
 
     @Query
     Set<Party> getAllByManager(Manager manager);
+
+    @Query
+    Party getByParty(Integer party_id);
+
+
 }

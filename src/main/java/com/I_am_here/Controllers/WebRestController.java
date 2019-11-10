@@ -120,6 +120,32 @@ public class WebRestController {
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
     }
+    @PostMapping("/web/credentials")
+    public ResponseEntity<String> postManagerCredentials(
+            @RequestHeader String access_token,
+            @RequestBody HashMap<String,String> data
+    ){
+        try{
+            Manager manager = getManagerAccount(access_token);
+            if(manager == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            String response = "";
+            if(data.containsKey("name")){
+                manager.setName(data.get("name"));
+                response = response + "Name set to " + data.get("name") + " ";
+            }
+            if(data.containsKey("email")){
+                manager.setEmail(data.get("email"));
+                response = response + "Email set to " + data.get("email");
+            }
+            managerRepository.saveAndFlush(manager);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
 
 
     /**
@@ -178,6 +204,82 @@ public class WebRestController {
             });
 
             return new ResponseEntity<>(list, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+    @PostMapping("/web/party")
+    public ResponseEntity<String> postOrUpdateParty(
+            @RequestHeader String access_token,
+            @RequestBody HashMap<String, String> party_data //id, name, description, code, subjects(id array)
+    ){
+        try{
+            Manager manager = getManagerAccount(access_token);
+            if(manager == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            Integer id = Integer.parseInt(party_data.get("id"));
+            Party party = partyRepository.getByParty(id);
+            String response;
+            if(party == null){
+                response = "Created new party";
+                party = new Party(party_data.get("name"), party_data.get("description"), party_data.get("code"), manager);
+                String  subjectsString = party_data.get("subjects");
+                subjectsString = subjectsString.replace('[', ' ');
+                subjectsString = subjectsString.replace(']', ' ');
+                subjectsString = subjectsString.trim();
+                String[] idArray = subjectsString.split(",");
+                int[] ids = new int[idArray.length];
+                for (int i = 0; i < idArray.length; i++) {
+                    ids[i] = Integer.parseInt(idArray[i].trim());
+                }
+                for (int i = 0; i < ids.length; i++) {
+                    party.addSubject(subjectRepository.getBySubjectId(ids[i]));
+                }
+
+            }else{
+                response = "Updated party";
+                party.setName(party_data.get("name"));
+                party.setDescription(party_data.get("description"));
+                party.setBroadcastWord(party_data.get("code"));
+                String  subjectsString = party_data.get("subjects");
+                party.setSubjects(new HashSet<>());
+                subjectsString = subjectsString.replace('[', ' ');
+                subjectsString = subjectsString.replace(']', ' ');
+                subjectsString = subjectsString.trim();
+                String[] idArray = subjectsString.split(",");
+                int[] ids = new int[idArray.length];
+                for (int i = 0; i < idArray.length; i++) {
+                    ids[i] = Integer.parseInt(idArray[i].trim());
+                }
+                for (int i = 0; i < ids.length; i++) {
+                    party.addSubject(subjectRepository.getBySubjectId(ids[i]));
+                }
+            }
+            party = partyRepository.saveAndFlush(party);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+
+
+
+    @GetMapping("/web/subjects")
+    public ResponseEntity<Set<Subject>> getSubjects(
+            @RequestHeader String access_token
+    ){
+        try{
+            String UUID = tokenParser.getUUID(access_token);
+            Manager manager = managerRepository.getByUuid(UUID);
+            if(manager == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            return new ResponseEntity<>(manager.getSubjects(), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());

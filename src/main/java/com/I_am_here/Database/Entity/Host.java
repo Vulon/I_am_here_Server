@@ -6,6 +6,7 @@ import com.I_am_here.TransportableData.TokenData;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -81,6 +82,20 @@ public class Host implements Account {
         this.qrKeyWords = qrKeyWords;
         this.codeWords = codeWords;
         this.subjects = subjects;
+    }
+
+    public void addCodeWords(List<String> code_words){
+        code_words.forEach(s -> this.codeWords.add(new Code_word_host(s, this)));
+    }
+
+    public Set<String> getCodeWordsStrings(){
+        HashSet<String> code_word_strings = new HashSet<>();
+        this.codeWords.forEach(code_word_host -> code_word_strings.add(code_word_host.getCodeWord()));
+        return code_word_strings;
+    }
+
+    public void addSubject(Subject s){
+        subjects.add(s);
     }
 
     @Override

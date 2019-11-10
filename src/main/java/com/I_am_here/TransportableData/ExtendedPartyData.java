@@ -5,6 +5,7 @@ import javafx.util.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ExtendedPartyData implements Serializable {
     private static final long serialVersionUID = -8333840907270694885L;
@@ -19,9 +20,9 @@ public class ExtendedPartyData implements Serializable {
 
     private String code;
 
-    private ArrayList<Pair<Integer, String>> subjects;
+    private ArrayList<HashMap<String, String>> subjects;
 
-    private ArrayList<Pair<Integer, String>> participators;
+    private ArrayList<HashMap<String, String>> participators;
 
     public ExtendedPartyData() {
     }
@@ -34,11 +35,17 @@ public class ExtendedPartyData implements Serializable {
         code = party.getBroadcastWord();
         subjects = new ArrayList<>();
         party.getSubjects().forEach(subject -> {
-            subjects.add(new Pair(subject.getSubjectId(), subject.getName()));
+            HashMap<String, String> map = new HashMap<>(2);
+            map.put("subjectId", subject.getSubjectId().toString());
+            map.put("name", subject.getName());
+            subjects.add(map);
         });
         participators = new ArrayList<>();
         party.getParticipators().forEach(participator -> {
-            participators.add(new Pair(participator.getParticipatorId(), participator.getName()));
+            HashMap<String, String> map = new HashMap<>(2);
+            map.put("participatorId", participator.getParticipatorId().toString());
+            map.put("name", participator.getName());
+            participators.add(map);
         });
     }
 
@@ -111,19 +118,19 @@ public class ExtendedPartyData implements Serializable {
         this.code = code;
     }
 
-    public ArrayList<Pair<Integer, String>> getSubjects() {
+    public ArrayList<HashMap<String, String>> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(ArrayList<Pair<Integer, String>> subjects) {
+    public void setSubjects(ArrayList<HashMap<String, String>> subjects) {
         this.subjects = subjects;
     }
 
-    public ArrayList<Pair<Integer, String>> getParticipators() {
+    public ArrayList<HashMap<String, String>> getParticipators() {
         return participators;
     }
 
-    public void setParticipators(ArrayList<Pair<Integer, String>> participators) {
+    public void setParticipators(ArrayList<HashMap<String, String>> participators) {
         this.participators = participators;
     }
 

@@ -163,7 +163,7 @@ public class TokenParser {
         }else{
             throw new RuntimeException("Not supported token type: " + tokenType);
         }
-        return Date.from(Instant.ofEpochSecond(now.getTime()).plusSeconds(seconds));
+        return Date.from(Instant.ofEpochMilli(now.getTime()).plusSeconds(seconds));
     }
 
     private byte[] getEncodedSecretKey(){

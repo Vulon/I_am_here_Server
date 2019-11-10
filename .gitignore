@@ -2,4 +2,7 @@ images/
 application.properties
 *properties
 src/main/resources/application*
-src/main/resources/data*
+*.p12
+target*
+*.properties
+target/classes/application.properties

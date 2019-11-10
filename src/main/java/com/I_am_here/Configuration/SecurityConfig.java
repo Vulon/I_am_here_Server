@@ -48,7 +48,7 @@ public class SecurityConfig{
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("/app/register", "/app/login", "/check");
+            //web.ignoring().antMatchers("/app/register", "/app/login", "/check");
         }
 
         @Override
@@ -56,8 +56,12 @@ public class SecurityConfig{
             http.csrf().disable().cors().disable()
                     .addFilterAfter(new TokenFilter(), UsernamePasswordAuthenticationFilter.class)
                     .authorizeRequests()
+                    .antMatchers("/app/register", "/app/login", "/check").permitAll()
+                    .and()
+                    .authorizeRequests()
                     .antMatchers("/app/host/*").hasAuthority("ACCOUNT_HOST")
-                    .antMatchers("/app/participator/*").hasAuthority("ACCOUNT_PARTICIPATOR");
+                    .antMatchers("/app/participator/*").hasAuthority("ACCOUNT_PARTICIPATOR")
+            .and().requiresChannel().antMatchers("/app/**", "/check").requiresSecure();
         }
     }
 
@@ -76,7 +80,7 @@ public class SecurityConfig{
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("/web/register", "/web/login", "/check");
+            //web.ignoring().antMatchers("/web/register", "/web/login", "/check");
         }
 
         @Override
@@ -84,32 +88,17 @@ public class SecurityConfig{
             http.csrf().disable()
                     .addFilterAfter(new TokenFilter(), UsernamePasswordAuthenticationFilter.class)
                     .authorizeRequests()
+                    .antMatchers("/web/register", "/web/login", "/check")
+                    .permitAll()
+                    .and().authorizeRequests()
                     .antMatchers("/web/*").hasAuthority("ACCOUNT_MANAGER")
                     .and().httpBasic()
-                    .authenticationEntryPoint(entryPoint);
+                    .authenticationEntryPoint(entryPoint)
+            .and().requiresChannel().antMatchers("/web/*").requiresSecure()
+            ;
         }
 
     }
-
-    @Configuration
-    @Order(3)
-    public class WebPagesConfig extends WebSecurityConfigurerAdapter{
-
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("/main.html", "auth.html", "/check");
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http.csrf().disable().cors().disable();
-        }
-    }
-
-
-
-
-
 
 
 

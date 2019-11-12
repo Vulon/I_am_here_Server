@@ -28,16 +28,20 @@ public class Code_word_participator {
         this.participator = participator;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         Code_word_participator code_wordParticipator1 = (Code_word_participator) o;
-
-        if (!codeWordId.equals(code_wordParticipator1.codeWordId)) return false;
-        if (codeWord != null ? !codeWord.equals(code_wordParticipator1.codeWord) : code_wordParticipator1.codeWord != null) return false;
-        return participator.equals(code_wordParticipator1.participator);
+        if(code_wordParticipator1.getParticipator().hashCode() != this.getParticipator().hashCode()){
+            return false;
+        }
+        if(this.getCodeWord().hashCode() != code_wordParticipator1.getCodeWord().hashCode()){
+            return false;
+        }
+        return this.getCodeWord().equals(code_wordParticipator1.getCodeWord());
 
     }
 

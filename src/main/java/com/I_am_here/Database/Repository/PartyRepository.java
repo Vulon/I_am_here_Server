@@ -5,8 +5,6 @@ import com.I_am_here.Database.Entity.Party;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 public interface PartyRepository extends JpaRepository<Party, Integer> {

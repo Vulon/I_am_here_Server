@@ -31,6 +31,8 @@ public class AndroidRestController {
     private PartyRepository partyRepository;
     private SubjectRepository subjectRepository;
     private VisitRepository visitRepository;
+    private Participator_Code_wordRepository participator_code_wordRepository;
+    private Host_Code_wordRepository host_code_wordRepository;
 
     private ManagerRepository managerRepository;
     private TokenParser tokenParser;
@@ -39,12 +41,14 @@ public class AndroidRestController {
     private QRParser qrParser;
 
 
-    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, VisitRepository visitRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator, QRParser qrParser) {
+    public AndroidRestController(HostRepository hostRepository, ParticipatorRepository participatorRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, VisitRepository visitRepository, Participator_Code_wordRepository participator_code_wordRepository, Host_Code_wordRepository host_code_wordRepository, ManagerRepository managerRepository, TokenParser tokenParser, SecretDataLoader secretDataLoader, StatusCodeCreator statusCodeCreator, QRParser qrParser) {
         this.hostRepository = hostRepository;
         this.participatorRepository = participatorRepository;
         this.partyRepository = partyRepository;
         this.subjectRepository = subjectRepository;
         this.visitRepository = visitRepository;
+        this.participator_code_wordRepository = participator_code_wordRepository;
+        this.host_code_wordRepository = host_code_wordRepository;
         this.managerRepository = managerRepository;
         this.tokenParser = tokenParser;
         this.secretDataLoader = secretDataLoader;
@@ -331,8 +335,10 @@ public class AndroidRestController {
             }
             int init_size = participator.getCodeWords().size();
 
-            participator.getCodeWords().removeIf(code_word_participator ->
-                code_words.contains(code_word_participator.getCodeWord()));
+            participator_code_wordRepository.deleteAllByCodeWordInAndParticipator(code_words, participator);
+            participator_code_wordRepository.flush();
+
+            participator.removeCodeWords(code_words);
             int end_size = participator.getCodeWords().size();
             participatorRepository.saveAndFlush(participator);
             return new ResponseEntity<>("Removed " + (end_size - init_size) + " words", HttpStatus.OK);
@@ -508,18 +514,22 @@ public class AndroidRestController {
             @RequestBody Set<String> code_words
     ){
         try{
-            Host host = (Host)getAccount(access_token);
+            final Host host = (Host)getAccount(access_token);
             if(host == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
 
             int init_size = host.getCodeWords().size();
 
-            host.getCodeWords().removeIf(code_word_host ->
-                    code_words.contains(code_word_host.getCodeWord()));
-            int end_size = host.getCodeWords().size();
+            int count = host_code_wordRepository.deleteAllByCodeWordInAndHost(code_words, host);
+
+
+            host.removeCodeWords(code_words);
+            host_code_wordRepository.flush();
             hostRepository.saveAndFlush(host);
-            return new ResponseEntity<>("Removed " + (end_size - init_size) + " words", HttpStatus.OK);
+
+            int end_size = host.getCodeWords().size();
+            return new ResponseEntity<>("Removed " + (end_size - init_size) + " words. From repo deleted words: " + count, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return  new ResponseEntity<>(null, statusCodeCreator.serverError());

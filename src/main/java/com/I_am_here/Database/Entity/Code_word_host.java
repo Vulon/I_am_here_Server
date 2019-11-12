@@ -32,17 +32,20 @@ public class Code_word_host {
         if (o == null || getClass() != o.getClass()) return false;
 
         Code_word_host that = (Code_word_host) o;
-
-        if (!codeWordId.equals(that.codeWordId)) return false;
-        if (codeWord != null ? !codeWord.equals(that.codeWord) : that.codeWord != null) return false;
-        return host.equals(that.host);
+        if(codeWord.hashCode() != that.codeWord.hashCode()){
+            return false;
+        }
+        if(host.hashCode() != that.host.hashCode()){
+            return false;
+        }
+        return codeWord.equals(that.codeWord);
 
     }
 
     @Override
     public int hashCode() {
-        int result = codeWordId.hashCode();
-        result = 31 * result + (codeWord != null ? codeWord.hashCode() : 0);
+        int result = codeWord.hashCode();
+        result = 31 * result + host.hashCode();
         return result;
     }
 

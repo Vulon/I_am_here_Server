@@ -1,6 +1,9 @@
 package com.I_am_here.Controllers;
 
-import com.I_am_here.Database.Entity.*;
+import com.I_am_here.Database.Entity.Host;
+import com.I_am_here.Database.Entity.Manager;
+import com.I_am_here.Database.Entity.Party;
+import com.I_am_here.Database.Entity.Subject;
 import com.I_am_here.Database.Repository.HostRepository;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.PartyRepository;

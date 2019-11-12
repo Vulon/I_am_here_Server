@@ -1,10 +1,5 @@
 package com.I_am_here.Security;
 
-import com.I_am_here.Application;
-import com.I_am_here.Database.Repository.HostRepository;
-import com.I_am_here.Database.Repository.ManagerRepository;
-import com.I_am_here.Database.Repository.ParticipatorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,8 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 

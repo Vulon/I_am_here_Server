@@ -1,7 +1,6 @@
 package com.I_am_here.TransportableData;
 
 import com.I_am_here.Database.Entity.Party;
-import javafx.util.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;

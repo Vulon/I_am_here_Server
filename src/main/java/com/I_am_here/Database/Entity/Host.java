@@ -44,7 +44,7 @@ public class Host implements Account {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
     private Set<QR_key_word> qrKeyWords;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
+    @OneToMany(mappedBy = "host")
     private Set<Code_word_host> codeWords;
 
 
@@ -86,6 +86,19 @@ public class Host implements Account {
 
     public void addCodeWords(List<String> code_words){
         code_words.forEach(s -> this.codeWords.add(new Code_word_host(s, this)));
+    }
+    public void removeCodeWords(Set<String> code_words){
+        HashSet<Code_word_host> newCodeWords = new HashSet<>();
+        this.codeWords.forEach(code_word_host -> {
+            if(!code_words.contains(code_word_host.getCodeWord())){
+                newCodeWords.add(code_word_host);
+            }
+        });
+        System.out.println("WAS: "+ this.codeWords.toString());
+//        this.codeWords = this.codeWords.stream().filter(code_word_host -> !code_words.contains(code_word_host.getCodeWord()))
+//                .collect(Collectors.toSet());
+        this.codeWords = newCodeWords;
+        System.out.println("BECAME: " + this.codeWords.toString());
     }
 
     public Set<String> getCodeWordsStrings(){

@@ -32,7 +32,7 @@ public class Participator implements Account {
     private String password;
 
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "participator")
+    @OneToMany(mappedBy = "participator")
     private Set<Code_word_participator> codeWords;
 
     @Column(name = "access_token")
@@ -73,7 +73,7 @@ public class Participator implements Account {
         System.out.println("PARTICIPATOR ADD CODE WORDS: " + code_words.toString());
         code_words.forEach(s -> this.codeWords.add(new Code_word_participator(s, this)));
     }
-    public void removeCodeWords(List<String> code_words){
+    public void removeCodeWords(Set<String> code_words){
         this.codeWords = this.codeWords.stream().filter(code_word_participator -> !code_words.contains(code_word_participator.getCodeWord()))
                 .collect(Collectors.toSet());
     }

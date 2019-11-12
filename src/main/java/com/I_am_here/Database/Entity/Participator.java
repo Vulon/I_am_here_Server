@@ -70,6 +70,7 @@ public class Participator implements Account {
     }
 
     public void addCodeWords(List<String> code_words){
+        System.out.println("PARTICIPATOR ADD CODE WORDS: " + code_words.toString());
         code_words.forEach(s -> this.codeWords.add(new Code_word_participator(s, this)));
     }
     public void removeCodeWords(List<String> code_words){

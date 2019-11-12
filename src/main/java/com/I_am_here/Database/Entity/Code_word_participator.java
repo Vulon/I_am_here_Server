@@ -41,10 +41,11 @@ public class Code_word_participator {
 
     }
 
+
     @Override
     public int hashCode() {
-        int result = codeWordId.hashCode();
-        result = 31 * result + (codeWord != null ? codeWord.hashCode() : 0);
+        int result = codeWord.hashCode();
+        result = 31 * result + participator.hashCode();
         return result;
     }
 

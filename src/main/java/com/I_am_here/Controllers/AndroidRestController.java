@@ -282,7 +282,7 @@ public class AndroidRestController {
 
     }
 
-    @PostMapping("/app/participator/upload_code_words")
+    @PostMapping("/app/participator/code_words")
     public ResponseEntity<String> uploadCodeWordsForParticipator(
             @RequestHeader String access_token,
             @RequestBody List<String> code_words
@@ -295,12 +295,54 @@ public class AndroidRestController {
             int initCount = participator.getCodeWords().size();
             participator.addCodeWords(code_words);
             int endCount = participator.getCodeWords().size();
+            participatorRepository.saveAndFlush(participator);
             return new ResponseEntity<>("Added " + Integer.toString(endCount - initCount), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return  new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
     }
+
+
+    @GetMapping("/app/participator/code_words")
+    public ResponseEntity<Set<String>> getParticipatorCodeWords(
+            @RequestHeader String access_token
+    ){
+        try{
+            Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            return new ResponseEntity<>(participator.getCodeWordsStrings(), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return  new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+    @DeleteMapping("/app/participator/code_words")
+    public ResponseEntity<String> deleteParticipatorCodeWords(
+            @RequestHeader String access_token,
+            @RequestBody Set<String> code_words
+    ){
+        try{
+            Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            int init_size = participator.getCodeWords().size();
+
+            participator.getCodeWords().removeIf(code_word_participator ->
+                code_words.contains(code_word_participator.getCodeWord()));
+            int end_size = participator.getCodeWords().size();
+            participatorRepository.saveAndFlush(participator);
+            return new ResponseEntity<>("Removed " + (end_size - init_size) + " words", HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return  new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+
 
     @GetMapping("/app/host/create_qr_token")
     public ResponseEntity<String> create_qr_token(
@@ -424,7 +466,7 @@ public class AndroidRestController {
         }
     }
 
-    @PostMapping("/app/host/upload_code_words")
+    @PostMapping("/app/host/code_words")
     public ResponseEntity<String> uploadCodeWordsForHost(
             @RequestHeader String access_token,
             @RequestBody List<String> code_words
@@ -437,7 +479,47 @@ public class AndroidRestController {
             int initCount = host.getCodeWords().size();
             host.addCodeWords(code_words);
             int endCount = host.getCodeWords().size();
+            hostRepository.saveAndFlush(host);
             return new ResponseEntity<>("Added " + Integer.toString(endCount - initCount), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return  new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/host/code_words")
+    public ResponseEntity<Set<String>> getHostCodeWords(
+            @RequestHeader String access_token
+    ){
+        try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            return new ResponseEntity<>(host.getCodeWordsStrings(), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return  new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+    @DeleteMapping("/app/host/code_words")
+    public ResponseEntity<String> deleteHostCodeWords(
+            @RequestHeader String access_token,
+            @RequestBody Set<String> code_words
+    ){
+        try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
+            int init_size = host.getCodeWords().size();
+
+            host.getCodeWords().removeIf(code_word_host ->
+                    code_words.contains(code_word_host.getCodeWord()));
+            int end_size = host.getCodeWords().size();
+            hostRepository.saveAndFlush(host);
+            return new ResponseEntity<>("Removed " + (end_size - init_size) + " words", HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return  new ResponseEntity<>(null, statusCodeCreator.serverError());

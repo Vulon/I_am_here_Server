@@ -1,12 +1,14 @@
 package com.I_am_here.Controllers;
 
 import com.I_am_here.Database.Entity.*;
+import com.I_am_here.Database.Repository.HostRepository;
 import com.I_am_here.Database.Repository.ManagerRepository;
 import com.I_am_here.Database.Repository.PartyRepository;
 import com.I_am_here.Database.Repository.SubjectRepository;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.ExtendedPartyData;
+import com.I_am_here.TransportableData.SubjectData;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +31,16 @@ public class WebRestController {
     private ManagerRepository managerRepository;
     private PartyRepository partyRepository;
     private SubjectRepository subjectRepository;
+    private HostRepository hostRepository;
     private TokenParser tokenParser;
     private StatusCodeCreator statusCodeCreator;
 
 
-    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator) {
+    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, HostRepository hostRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator) {
         this.managerRepository = managerRepository;
         this.partyRepository = partyRepository;
         this.subjectRepository = subjectRepository;
+        this.hostRepository = hostRepository;
         this.tokenParser = tokenParser;
         this.statusCodeCreator = statusCodeCreator;
     }
@@ -260,7 +264,7 @@ public class WebRestController {
 
 
     @GetMapping("/web/subjects")
-    public ResponseEntity<Set<Subject>> getSubjects(
+    public ResponseEntity<Set<SubjectData>> getSubjects(
             @RequestHeader String access_token
     ){
         try{
@@ -269,7 +273,11 @@ public class WebRestController {
             if(manager == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
-            return new ResponseEntity<>(manager.getSubjects(), HttpStatus.OK);
+            HashSet<SubjectData> subjectData = new HashSet<>();
+            manager.getSubjects().forEach(subject -> {
+                subjectData.add(new SubjectData(subject));
+            });
+            return new ResponseEntity<>(subjectData, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
@@ -307,27 +315,35 @@ public class WebRestController {
 
 
     @PostMapping("/web/create_subject")
-    public ResponseEntity<String> createSubject(
+    public ResponseEntity<String> postSubject(
             @RequestHeader String access_token,
-            @RequestParam String name,
-            @RequestParam long start_date,
-            @RequestParam long finish_date,
-            @RequestParam String code_word,
-            @RequestParam(required = false, defaultValue = "") String description,
-            @RequestParam(required=false, defaultValue = "0") int plan
-    ){
+            @RequestBody SubjectData subjectData
+            ){
         try{
             Manager manager = managerRepository.findByUuid(tokenParser.getUUID(access_token));
             if(manager == null){
                 return new ResponseEntity<>("Not found", statusCodeCreator.userNotFound());
             }
-            Date start = new Date();
-            start.setTime(start_date);
-            Date finish = new Date();
-            finish.setTime(finish_date);
-            Subject subject = new Subject(name, plan, description, start, finish, code_word, manager);
+            Subject subject = subjectRepository.getBySubjectId(subjectData.getId());
+            HashSet<Party> parties = new HashSet<>(            );
+            subjectData.getParties().forEach(stringStringHashMap -> {
+                parties.add(partyRepository.getByParty(Integer.parseInt(stringStringHashMap.get("id"))));
+            });
+            HashSet<Host> hosts = new HashSet<>();
+            subjectData.getHosts().forEach(stringStringHashMap -> {
+                hosts.add(hostRepository.getByHostId(Integer.parseInt(stringStringHashMap.get("id"))));
+            });
+
+            if(subject == null){
+                subject = new Subject();
+                subject.setManager(manager);
+                subject.setBroadcastStart(new Date());
+                subject.setData(subjectData, hosts, parties);
+            }else{
+                subject.setData(subjectData, hosts, parties);
+            }
             subjectRepository.saveAndFlush(subject);
-            return new ResponseEntity<>("Subject " + name + " created", HttpStatus.OK);
+            return new ResponseEntity<>("Subject created " + subject.toString() , HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>("Server error", statusCodeCreator.serverError());

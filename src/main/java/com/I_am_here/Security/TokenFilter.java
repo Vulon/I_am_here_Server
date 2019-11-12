@@ -68,9 +68,8 @@ public class TokenFilter extends OncePerRequestFilter {
         }
 
 
+
         String path =  httpServletRequest.getRequestURI();
-        System.out.println("Filter initiated for path " + path);
-        System.out.println(httpServletRequest);
         try{
 
                 if(!filterUnsecuredWebPath(path)){

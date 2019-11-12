@@ -1,6 +1,11 @@
 package com.I_am_here.Database.Entity;
 
 
+import com.I_am_here.TransportableData.SubjectData;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.Date;
@@ -11,45 +16,57 @@ import java.util.Set;
 @Table(name = "subject")
 public class Subject {
     @Id
+    @JsonProperty(value = "id")
     @Column(name = "subject_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer subjectId;
 
+    @JsonProperty(value = "name")
     @Column(name = "name", nullable = false)
     private String name;
 
+    @JsonProperty(value = "plan")
     @Column(name = "plan")
     private Integer plan;
 
     @Column(name = "description", nullable = true)
     private String description;
 
+    @JsonProperty(value = "start_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "start_date")
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startDate;
 
+    @JsonProperty(value = "finish_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "finish_date")
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date finishDate;
 
+    @JsonProperty(value = "code")
     @Column(name = "broadcast_word")
     private String broadcastWord;
 
+    @JsonIgnore
     @Column(name = "broadcast_start")
     @Temporal(TemporalType.TIMESTAMP)
     private Date broadcastStart;
 
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "manager_id")
     private Manager manager;
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(name = "host_subject", joinColumns = @JoinColumn(name = "subject_id"),
     inverseJoinColumns = @JoinColumn(name = "host_id"))
     private Set<Host> hosts;
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(name = "party_subject", joinColumns = @JoinColumn(name = "subject_id"),
     inverseJoinColumns = @JoinColumn(name = "party_id"))
     private Set<Party> parties;
@@ -72,6 +89,17 @@ public class Subject {
         this.broadcastStart = Date.from(Instant.now());
         this.hosts = new HashSet<>();
         this.parties = new HashSet<>();
+    }
+
+    public void setData(SubjectData subjectData, Set<Host> hosts, Set<Party> parties){
+        this.name = subjectData.getName();
+        this.plan = subjectData.getPlan();
+        this.description = subjectData.getDescription();
+        this.startDate = new Date(subjectData.getStart_date());
+        this.finishDate = new Date(subjectData.getFinish_date());
+        this.broadcastWord = subjectData.getCode();
+        this.hosts = hosts;
+        this.parties = parties;
     }
 
     @Override

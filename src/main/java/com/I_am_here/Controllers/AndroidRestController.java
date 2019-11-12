@@ -8,6 +8,7 @@ import com.I_am_here.Services.QRParser;
 import com.I_am_here.Services.SecretDataLoader;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.PartyData;
+import com.I_am_here.TransportableData.SubjectData;
 import com.I_am_here.TransportableData.TokenData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -355,7 +356,7 @@ public class AndroidRestController {
     }
 
     @GetMapping("/app/host/subjects_by_date")
-    public ResponseEntity<Set<Subject>> getSubjectsByDate(
+    public ResponseEntity<Set<SubjectData>> getSubjectsByDate(
             @RequestHeader String access_token,
             @RequestParam long timestamp
     ){
@@ -369,8 +370,11 @@ public class AndroidRestController {
             date.setTime(timestamp);
             Set<Subject> subjects = subjectRepository.getAllByStartDateBeforeAndFinishDateAfter(date, date);
             subjects.removeIf(subject -> !subject.getHosts().contains(host));
-
-            return new ResponseEntity<>(subjects, HttpStatus.OK);
+            HashSet<SubjectData> subjectData = new HashSet<>();
+            subjects.forEach(subject -> {
+                subjectData.add(new SubjectData(subject));
+            });
+            return new ResponseEntity<>(subjectData, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
@@ -378,7 +382,7 @@ public class AndroidRestController {
     }
 
     @GetMapping("/app/host/find_subject")
-    public ResponseEntity<Set<Subject>> getSubjectsList(
+    public ResponseEntity<Set<SubjectData>> getSubjectsList(
             @RequestHeader String access_token,
             @RequestParam String code_word
     ){
@@ -387,7 +391,11 @@ public class AndroidRestController {
             if(subjects == null){
                 return new ResponseEntity<>(new HashSet<>(), HttpStatus.OK);
             }
-            return  new ResponseEntity<>(subjects, HttpStatus.OK);
+            HashSet<SubjectData> subjectData = new HashSet<>();
+            subjects.forEach(subject -> {
+                subjectData.add(new SubjectData(subject));
+            });
+            return  new ResponseEntity<>(subjectData, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return  new ResponseEntity<>(null, statusCodeCreator.serverError());
@@ -395,7 +403,7 @@ public class AndroidRestController {
     }
 
     @GetMapping("/app/host/find_subjects_by_code_words")
-    public ResponseEntity<Set<Subject>> findSubjectsByCodeWords(
+    public ResponseEntity<Set<SubjectData>> findSubjectsByCodeWords(
             @RequestHeader String access_token
     ){
         try{
@@ -403,8 +411,13 @@ public class AndroidRestController {
             if(host == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
-            Set<Subject> subjects = subjectRepository.getAllByBroadcastWordIn(host.getCodeWordsStrings());
-            return new ResponseEntity<>(subjects, HttpStatus.OK);
+            HashSet<SubjectData> subjectData = new HashSet<>();
+            Set<Subject> subjectSet = subjectRepository.getAllByBroadcastWordIn(host.getCodeWordsStrings());
+
+            subjectSet.forEach(subject -> {
+                subjectData.add(new SubjectData(subject));
+            });
+            return new ResponseEntity<>(subjectData, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
@@ -464,13 +477,16 @@ public class AndroidRestController {
     }
 
     @GetMapping("/app/host/my_subjects_list")
-    public ResponseEntity<Set<Subject>> getSubjectsByHost(
+    public ResponseEntity<Set<SubjectData>> getSubjectsByHost(
             @RequestHeader String access_token
     ){
         try{
             Host host = (Host)getAccount(access_token);
-
-            return new ResponseEntity<>(host.getSubjects(), HttpStatus.OK);
+            HashSet<SubjectData> subjectData = new HashSet<>();
+            host.getSubjects().forEach(subject -> {
+                subjectData.add(new SubjectData(subject));
+            });
+            return new ResponseEntity<>(subjectData, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());

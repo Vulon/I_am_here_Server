@@ -35,9 +35,7 @@ public class Code_word_host {
         if(codeWord.hashCode() != that.codeWord.hashCode()){
             return false;
         }
-        if(host.hashCode() != that.host.hashCode()){
-            return false;
-        }
+
         return codeWord.equals(that.codeWord);
 
     }

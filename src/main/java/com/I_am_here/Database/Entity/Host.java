@@ -2,6 +2,7 @@ package com.I_am_here.Database.Entity;
 
 
 import com.I_am_here.Database.Account;
+import com.I_am_here.Database.Repository.Host_Code_wordRepository;
 import com.I_am_here.TransportableData.TokenData;
 
 import javax.persistence.*;
@@ -84,8 +85,11 @@ public class Host implements Account {
         this.subjects = subjects;
     }
 
-    public void addCodeWords(List<String> code_words){
-        code_words.forEach(s -> this.codeWords.add(new Code_word_host(s, this)));
+    public void addCodeWords(List<String> code_words, Host_Code_wordRepository repository){
+        code_words.forEach(s -> {
+            Code_word_host word = new Code_word_host(s, this);
+            repository.save(word);
+        });
     }
     public void removeCodeWords(Set<String> code_words){
         HashSet<Code_word_host> newCodeWords = new HashSet<>();
@@ -95,8 +99,6 @@ public class Host implements Account {
             }
         });
         System.out.println("WAS: "+ this.codeWords.toString());
-//        this.codeWords = this.codeWords.stream().filter(code_word_host -> !code_words.contains(code_word_host.getCodeWord()))
-//                .collect(Collectors.toSet());
         this.codeWords = newCodeWords;
         System.out.println("BECAME: " + this.codeWords.toString());
     }

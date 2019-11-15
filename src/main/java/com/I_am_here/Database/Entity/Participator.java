@@ -2,6 +2,7 @@ package com.I_am_here.Database.Entity;
 
 
 import com.I_am_here.Database.Account;
+import com.I_am_here.Database.Repository.Participator_Code_wordRepository;
 import com.I_am_here.TransportableData.TokenData;
 
 import javax.persistence.*;
@@ -69,9 +70,12 @@ public class Participator implements Account {
         this.parties.add(party);
     }
 
-    public void addCodeWords(List<String> code_words){
+    public void addCodeWords(List<String> code_words, Participator_Code_wordRepository repository ){
         System.out.println("PARTICIPATOR ADD CODE WORDS: " + code_words.toString());
-        code_words.forEach(s -> this.codeWords.add(new Code_word_participator(s, this)));
+        code_words.forEach(s -> {
+            Code_word_participator word = new Code_word_participator(s, this);
+            repository.save(word);
+        });
     }
     public void removeCodeWords(Set<String> code_words){
         this.codeWords = this.codeWords.stream().filter(code_word_participator -> !code_words.contains(code_word_participator.getCodeWord()))
@@ -107,8 +111,7 @@ public class Participator implements Account {
 
     @Override
     public int hashCode() {
-        int result = participatorId.hashCode();
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        int result = 31 + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);

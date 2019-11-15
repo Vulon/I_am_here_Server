@@ -297,9 +297,10 @@ public class AndroidRestController {
                 return new ResponseEntity<>("", statusCodeCreator.userNotFound());
             }
             int initCount = participator.getCodeWords().size();
-            participator.addCodeWords(code_words);
-            int endCount = participator.getCodeWords().size();
+            participator.addCodeWords(code_words, participator_code_wordRepository);
+            participator_code_wordRepository.flush();
             participatorRepository.saveAndFlush(participator);
+            int endCount = participator.getCodeWords().size();
             return new ResponseEntity<>("Added " + Integer.toString(endCount - initCount), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -482,8 +483,10 @@ public class AndroidRestController {
             if(host == null){
                 return new ResponseEntity<>("", statusCodeCreator.userNotFound());
             }
+
             int initCount = host.getCodeWords().size();
-            host.addCodeWords(code_words);
+            host.addCodeWords(code_words, host_code_wordRepository);
+            host_code_wordRepository.flush();
             int endCount = host.getCodeWords().size();
             hostRepository.saveAndFlush(host);
             return new ResponseEntity<>("Added " + Integer.toString(endCount - initCount), HttpStatus.OK);

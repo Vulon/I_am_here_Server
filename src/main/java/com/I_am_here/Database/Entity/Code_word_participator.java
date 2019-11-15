@@ -24,6 +24,12 @@ public class Code_word_participator {
     }
 
     public Code_word_participator(String codeWord, Participator participator) {
+        if(codeWord == null){
+            this.codeWord = "";
+        }
+        if(participator == null){
+            System.out.println("EMPTY PARTICIPATOR WHEN TRIED TO CREATE " + codeWord);
+        }
         this.codeWord = codeWord;
         this.participator = participator;
     }
@@ -35,9 +41,6 @@ public class Code_word_participator {
         if (o == null || getClass() != o.getClass()) return false;
 
         Code_word_participator code_wordParticipator1 = (Code_word_participator) o;
-        if(code_wordParticipator1.getParticipator().hashCode() != this.getParticipator().hashCode()){
-            return false;
-        }
         if(this.getCodeWord().hashCode() != code_wordParticipator1.getCodeWord().hashCode()){
             return false;
         }
@@ -48,8 +51,12 @@ public class Code_word_participator {
 
     @Override
     public int hashCode() {
-        int result = codeWord.hashCode();
-        result = 31 * result + participator.hashCode();
+        if(codeWord == null){
+            codeWord = "";
+        }
+        System.out.println("Trying to get hash code for string: " + codeWord);
+        int result = 31 + codeWord.hashCode();
+        result = 31 * result + (participator == null ? 31 :participator.hashCode());
         return result;
     }
 

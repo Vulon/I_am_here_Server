@@ -7,6 +7,7 @@ import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.QRParser;
 import com.I_am_here.Services.SecretDataLoader;
 import com.I_am_here.Services.StatusCodeCreator;
+import com.I_am_here.TransportableData.ParticipatorVisitTimes;
 import com.I_am_here.TransportableData.PartyData;
 import com.I_am_here.TransportableData.SubjectData;
 import com.I_am_here.TransportableData.TokenData;
@@ -349,7 +350,81 @@ public class AndroidRestController {
         }
     }
 
+    @GetMapping("/app/participator/credentials")
+    public ResponseEntity<HashMap> getParticipatorCredentials(
+            @RequestHeader String access_token
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            HashMap<String, String> data = new HashMap<>();
+            data.put("name", participator.getName());
+            data.put("email", participator.getEmail());
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+    @PostMapping("/app/participator/credentials")
+    public ResponseEntity<String> postParticipatorCredentials(
+            @RequestHeader String access_token,
+            @RequestBody HashMap<String,String> data
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            String response = "";
+            if(data.containsKey("name")){
+                participator.setName(data.get("name"));
+                response = response + "Name set to " + data.get("name") + " ";
+            }
+            if(data.containsKey("email")){
+                participator.setEmail(data.get("email"));
+                response = response + "Email set to " + data.get("email");
+            }
+            participatorRepository.saveAndFlush(participator);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
 
+
+
+
+
+    @PostMapping("/app/participator/submit_qr_token")
+    public ResponseEntity<String> submitQrToken(
+            @RequestHeader String access_token,
+            @RequestParam String qr_token
+            ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
+            }
+            Host host = hostRepository.getByHostId(qrParser.getHostID(qr_token));
+            if(host == null){
+                return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
+            }
+            Subject subject = subjectRepository.getBySubjectId(qrParser.getSubjectID(qr_token));
+            if(subject == null){
+                return new ResponseEntity<>("Subject not found", statusCodeCreator.subjectNotFound());
+            }
+            Visit visit = new Visit(qrParser.getDate(qr_token), participator, host, subject);
+            visitRepository.saveAndFlush(visit);
+            return new ResponseEntity<>("Visit scored", HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
+        }
+    }
 
     @GetMapping("/app/host/create_qr_token")
     public ResponseEntity<String> create_qr_token(
@@ -376,33 +451,6 @@ public class AndroidRestController {
         }
     }
 
-
-    @PostMapping("/app/participator/submit_qr_token")
-    public ResponseEntity<String> submitQrToken(
-            @RequestHeader String access_token,
-            @RequestParam String qr_token
-            ){
-        try{
-            Participator participator = (Participator) getAccount(access_token);
-            if(participator == null){
-                return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
-            }
-            Host host = hostRepository.getByUuid(qrParser.getHostUUID(qr_token));
-            if(host == null){
-                return new ResponseEntity<>("Account not found", statusCodeCreator.userNotFound());
-            }
-            Subject subject = subjectRepository.getBySubjectId(qrParser.getSubjectID(qr_token));
-            if(subject == null){
-                return new ResponseEntity<>("Subject not found", statusCodeCreator.subjectNotFound());
-            }
-            Visit visit = new Visit(qrParser.getDate(qr_token), participator, host, subject);
-            visitRepository.saveAndFlush(visit);
-            return new ResponseEntity<>("Visit scored", HttpStatus.OK);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
-        }
-    }
 
     @GetMapping("/app/host/subjects_by_date")
     public ResponseEntity<Set<SubjectData>> getSubjectsByDate(
@@ -556,7 +604,6 @@ public class AndroidRestController {
                 subject.addHost(host);
                 subject = subjectRepository.saveAndFlush(subject);
 
-                host.addSubject(subject);
                 host = hostRepository.saveAndFlush(host);
 
 
@@ -669,50 +716,64 @@ public class AndroidRestController {
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
     }
-    @GetMapping("/app/participator/credentials")
-    public ResponseEntity<HashMap> getParticipatorCredentials(
-            @RequestHeader String access_token
-    ){
-        try{
-            Participator participator = (Participator) getAccount(access_token);
-            if(participator == null){
-                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
-            }
-            HashMap<String, String> data = new HashMap<>();
-            data.put("name", participator.getName());
-            data.put("email", participator.getEmail());
-            return new ResponseEntity<>(data, HttpStatus.OK);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseEntity<>(null, statusCodeCreator.serverError());
-        }
-    }
-    @PostMapping("/app/participator/credentials")
-    public ResponseEntity<String> postParticipatorCredentials(
+
+
+    @GetMapping("/app/host/list_of_visit_times")
+    public ResponseEntity<Set<ParticipatorVisitTimes>> getParticipatorVisitTimesForHost(
             @RequestHeader String access_token,
-            @RequestBody HashMap<String,String> data
+            Integer subject_id,
+            Long timestamp,
+            @RequestBody Set<Integer> partySet
     ){
         try{
-            Participator participator = (Participator) getAccount(access_token);
-            if(participator == null){
-                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return  new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
-            String response = "";
-            if(data.containsKey("name")){
-                participator.setName(data.get("name"));
-                response = response + "Name set to " + data.get("name") + " ";
+            final Date date = new Date(timestamp);
+
+            final Subject subject = subjectRepository.getBySubjectId(subject_id);
+            final Set<Party> parties = new HashSet<>();
+            partySet.forEach(integer -> parties.add(partyRepository.getByParty(integer)));
+            final Set<Visit> visitSet = visitRepository.getAllByHostAndAndSubject(host, subject);
+            if(visitSet == null){
+                return new ResponseEntity<>(new HashSet<>(), HttpStatus.OK);
             }
-            if(data.containsKey("email")){
-                participator.setEmail(data.get("email"));
-                response = response + "Email set to " + data.get("email");
-            }
-            participatorRepository.saveAndFlush(participator);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+
+            Calendar calendar = GregorianCalendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 1);
+            HashSet<ParticipatorVisitTimes> visitTimes = new HashSet<>();
+
+            visitSet.stream().filter(visit -> visit.getDate().before(date) && visit.getDate().after(calendar.getTime()))
+                    .filter(visit -> {
+                        for(Party p : visit.getParticipator().getParties()){
+                            if(parties.contains(p)){
+                                return true;
+                            }
+                        }
+                        return false;
+                    }).forEach(visit -> {
+                        Integer id = visit.getParticipator().getParticipatorId();
+                        for(ParticipatorVisitTimes vt : visitTimes){
+                            if(vt.id.equals(id)){
+                                vt.addVisit(visit.getDate());
+                                return;
+                            }
+                        }
+                        ParticipatorVisitTimes pvt = new ParticipatorVisitTimes(visit.getParticipator());
+                        pvt.addVisit(visit.getDate());
+                        visitTimes.add(pvt);
+            });
+            return new ResponseEntity<>(visitTimes, HttpStatus.OK);
+
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
         }
     }
+
 
     @PostMapping("/app/logout")
     public ResponseEntity<String> logout(@RequestHeader String refresh_token){

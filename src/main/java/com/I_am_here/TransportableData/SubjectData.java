@@ -38,22 +38,27 @@ public class SubjectData implements Serializable {
         start_date = subject.getStartDate().getTime();
         finish_date = subject.getFinishDate().getTime();
         code = subject.getBroadcastWord();
+        {
+            hosts = new ArrayList<>();
+            subject.getHosts().forEach(host -> {
+                HashMap<String, String> map = new HashMap<>(2);
+                map.put("id", host.getHostId().toString());
+                map.put("name", host.getName());
+                hosts.add(map);
+            });
+        }
 
-        hosts = new ArrayList<>();
-        subject.getHosts().forEach(host -> {
-            HashMap<String, String> map = new HashMap<>(2);
-            map.put("id", host.getHostId().toString());
-            map.put("name", host.getName());
-            hosts.add(map);
-        });
 
-        parties = new ArrayList<>();
-        subject.getParties().forEach(party -> {
-            HashMap<String, String> map = new HashMap<>(2);
-            map.put("id", party.getParty().toString());
-            map.put("name", party.getName());
-            hosts.add(map);
-        });
+        {
+            parties = new ArrayList<>();
+            subject.getParties().forEach(party -> {
+                HashMap<String, String> map = new HashMap<>(2);
+                map.put("id", party.getParty().toString());
+                map.put("name", party.getName());
+                parties.add(map);
+            });
+        }
+
     }
 
 

@@ -1,5 +1,8 @@
 package com.I_am_here.Database.Entity;
 
+import com.I_am_here.Database.Repository.PartyRepository;
+import com.I_am_here.Database.Repository.SubjectRepository;
+
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.Date;
@@ -30,12 +33,12 @@ public class Party {
     @Temporal(TemporalType.TIMESTAMP)
     private Date broadcastStart;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "party_subject", joinColumns =
     @JoinColumn(name = "party_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
     private Set<Subject> subjects;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "party_participator", joinColumns =
     @JoinColumn(name = "party_id"), inverseJoinColumns = @JoinColumn(name = "participator_id"))
     private Set<Participator> participators;
@@ -46,7 +49,6 @@ public class Party {
 
     public Party() {
     }
-
 
 
     public Party(String name, String description, String broadcastWord, Manager manager){
@@ -61,10 +63,22 @@ public class Party {
 
     public void addParticipator(Participator p){
         this.participators.add(p);
+        p.getParties().add(this);
+    }
+
+    public void removeParticipator(Participator p ){
+        this.participators.remove(p);
+        p.getParties().remove(this);
     }
 
     public void addSubject(Subject s){
         this.subjects.add(s);
+        s.getParties().add(this);
+    }
+
+    public void removeSubject(Subject s){
+        this.subjects.remove(s);
+        s.getParties().remove(this);
     }
 
     @Override

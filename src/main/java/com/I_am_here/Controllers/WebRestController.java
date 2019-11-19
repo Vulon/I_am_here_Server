@@ -1,13 +1,7 @@
 package com.I_am_here.Controllers;
 
-import com.I_am_here.Database.Entity.Host;
-import com.I_am_here.Database.Entity.Manager;
-import com.I_am_here.Database.Entity.Party;
-import com.I_am_here.Database.Entity.Subject;
-import com.I_am_here.Database.Repository.HostRepository;
-import com.I_am_here.Database.Repository.ManagerRepository;
-import com.I_am_here.Database.Repository.PartyRepository;
-import com.I_am_here.Database.Repository.SubjectRepository;
+import com.I_am_here.Database.Entity.*;
+import com.I_am_here.Database.Repository.*;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.ExtendedPartyData;
@@ -20,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -37,15 +32,17 @@ public class WebRestController {
     private HostRepository hostRepository;
     private TokenParser tokenParser;
     private StatusCodeCreator statusCodeCreator;
+    private ParticipatorRepository participatorRepository;
 
 
-    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, HostRepository hostRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator) {
+    public WebRestController(ManagerRepository managerRepository, PartyRepository partyRepository, SubjectRepository subjectRepository, HostRepository hostRepository, TokenParser tokenParser, StatusCodeCreator statusCodeCreator, ParticipatorRepository participatorRepository) {
         this.managerRepository = managerRepository;
         this.partyRepository = partyRepository;
         this.subjectRepository = subjectRepository;
         this.hostRepository = hostRepository;
         this.tokenParser = tokenParser;
         this.statusCodeCreator = statusCodeCreator;
+        this.participatorRepository = participatorRepository;
     }
 
     /**
@@ -233,29 +230,49 @@ public class WebRestController {
             if(party == null){
                 response = "Created new party:   ";
                 party = new Party(party_data.getName(), party_data.getDescription(), party_data.getCode(), manager);
-                Party finalParty = party;
-                party_data.getSubjects().forEach(stringStringHashMap -> {
-                    Integer id = Integer.parseInt(stringStringHashMap.get("subjectId"));
-                    Subject subject = subjectRepository.getBySubjectId(id);
-                    finalParty.addSubject(subject);
-                });
-                party = finalParty;
+
             }else{
                 response = "Updated party:   ";
                 party.setName(party_data.getName());
                 party.setDescription(party_data.getDescription());
                 party.setBroadcastWord(party_data.getCode());
-                party.setSubjects(new HashSet<>());
-                Party finalParty = party;
-                party_data.getSubjects().forEach(stringStringHashMap -> {
-                    Integer id = Integer.parseInt(stringStringHashMap.get("subjectId"));
-                    Subject subject = subjectRepository.getBySubjectId(id);
-                    finalParty.addSubject(subject);
-                });
-                party = finalParty;
+                //TODO FIXED IT?
             }
+            final Party partyRef = party;
+            Set<Subject> subjectSet = new HashSet<>();
+            party_data.getSubjects().forEach(stringStringHashMap -> subjectSet.add(subjectRepository.getBySubjectId(Integer.parseInt(stringStringHashMap.get("id")))));
+            subjectSet.forEach(subject -> {
+                if(!partyRef.getSubjects().contains(subject)){
+                    partyRef.addSubject(subject);
+                    subjectRepository.save(subject);
+                }
+            });
+            partyRef.getSubjects().forEach(subject -> {
+                if(!subjectSet.contains(subject)){
+                    partyRef.removeSubject(subject);
+                    subjectRepository.save(subject);
+                }
+            });
+            subjectRepository.flush();
 
-            party = partyRepository.saveAndFlush(party);
+            Set<Participator> participatorSet = new HashSet<>();
+            party_data.getParticipators().forEach(stringStringHashMap -> participatorSet.add(participatorRepository.getByParticipatorId(Integer.parseInt(stringStringHashMap.get("id")))));
+            participatorSet.forEach(participator -> {
+                if(!partyRef.getParticipators().contains(participator)){
+                    partyRef.addParticipator(participator);
+                    participatorRepository.save(participator);
+                }
+            });
+            partyRef.getParticipators().forEach(participator -> {
+                if(!participatorSet.contains(participator)){
+                    partyRef.removeParticipator(participator);
+                    participatorRepository.save(participator);
+                }
+            });
+            participatorRepository.flush();
+
+            partyRepository.saveAndFlush(partyRef);
+
             return new ResponseEntity<>(response + party.toString(), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -328,7 +345,7 @@ public class WebRestController {
                 return new ResponseEntity<>("Not found", statusCodeCreator.userNotFound());
             }
             Subject subject = subjectRepository.getBySubjectId(subjectData.getId());
-            HashSet<Party> parties = new HashSet<>(            );
+            HashSet<Party> parties = new HashSet<>();
             subjectData.getParties().forEach(stringStringHashMap -> {
                 parties.add(partyRepository.getByParty(Integer.parseInt(stringStringHashMap.get("id"))));
             });
@@ -341,10 +358,42 @@ public class WebRestController {
                 subject = new Subject();
                 subject.setManager(manager);
                 subject.setBroadcastStart(new Date());
-                subject.setData(subjectData, hosts, parties);
+                subject.setData(subjectData);
+
             }else{
-                subject.setData(subjectData, hosts, parties);
+                subject.setData(subjectData);
             }
+            final Subject subjectRef = subject;
+
+            parties.forEach(party -> {
+                if(!subjectRef.getParties().contains(party)){
+                    subjectRef.addParty(party);
+                    partyRepository.save(party);
+                }
+            });
+            subjectRef.getParties().forEach(party -> {
+                if(!parties.contains(party)){
+                    subjectRef.removeParty(party);
+                    partyRepository.save(party);
+                }
+            });
+            partyRepository.flush();
+
+            hosts.forEach(host -> {
+                if(!subjectRef.getHosts().contains(host)){
+                    subjectRef.addHost(host);
+                    hostRepository.save(host);
+                }
+            });
+            subjectRef.getHosts().forEach(host -> {
+                if(!hosts.contains(host)){
+                    subjectRef.removeHost(host);
+                    hostRepository.save(host);
+                }
+            });
+            hostRepository.flush();
+
+
             subjectRepository.saveAndFlush(subject);
             return new ResponseEntity<>("Subject created " + subject.toString() , HttpStatus.OK);
         }catch (Exception e){

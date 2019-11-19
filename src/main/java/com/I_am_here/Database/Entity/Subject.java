@@ -1,6 +1,8 @@
 package com.I_am_here.Database.Entity;
 
 
+import com.I_am_here.Database.Repository.HostRepository;
+import com.I_am_here.Database.Repository.PartyRepository;
 import com.I_am_here.TransportableData.SubjectData;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,23 +61,47 @@ public class Subject {
     @JoinColumn(name = "manager_id")
     private Manager manager;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JsonIgnore
     @JoinTable(name = "host_subject", joinColumns = @JoinColumn(name = "subject_id"),
     inverseJoinColumns = @JoinColumn(name = "host_id"))
     private Set<Host> hosts;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JsonIgnore
     @JoinTable(name = "party_subject", joinColumns = @JoinColumn(name = "subject_id"),
     inverseJoinColumns = @JoinColumn(name = "party_id"))
     private Set<Party> parties;
 
-    public Subject() {
-    }
+
 
     public void addHost(Host host){
         hosts.add(host);
+        host.getSubjects().add(this);
+    }
+
+    public void removeHost(Host host){
+        hosts.remove(host);
+        host.getSubjects().remove(this);
+    }
+    public void addParty(Party party){
+        this.parties.add(party);
+        party.getSubjects().add(this);
+    }
+
+    public void removeParty(Party party){
+        this.parties.remove(party);
+        party.getSubjects().remove(this);
+    }
+
+
+    public void setData(SubjectData subjectData){
+        this.name = subjectData.getName();
+        this.plan = subjectData.getPlan();
+        this.description = subjectData.getDescription();
+        this.startDate = new Date(subjectData.getStart_date());
+        this.finishDate = new Date(subjectData.getFinish_date());
+        this.broadcastWord = subjectData.getCode();
     }
 
     public Subject(String name, Integer plan, String description, Date start_date, Date finish_date, String broadcast_word, Manager manager) {
@@ -90,17 +116,12 @@ public class Subject {
         this.hosts = new HashSet<>();
         this.parties = new HashSet<>();
     }
-
-    public void setData(SubjectData subjectData, Set<Host> hosts, Set<Party> parties){
-        this.name = subjectData.getName();
-        this.plan = subjectData.getPlan();
-        this.description = subjectData.getDescription();
-        this.startDate = new Date(subjectData.getStart_date());
-        this.finishDate = new Date(subjectData.getFinish_date());
-        this.broadcastWord = subjectData.getCode();
-        this.hosts = hosts;
-        this.parties = parties;
+    public Subject() {
     }
+
+
+
+
 
     @Override
     public boolean equals(Object o) {

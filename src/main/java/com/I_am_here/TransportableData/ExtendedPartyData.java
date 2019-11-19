@@ -33,19 +33,24 @@ public class ExtendedPartyData implements Serializable {
         description = party.getDescription();
         code = party.getBroadcastWord();
         subjects = new ArrayList<>();
-        party.getSubjects().forEach(subject -> {
-            HashMap<String, String> map = new HashMap<>(2);
-            map.put("subjectId", subject.getSubjectId().toString());
-            map.put("name", subject.getName());
-            subjects.add(map);
-        });
-        participators = new ArrayList<>();
-        party.getParticipators().forEach(participator -> {
-            HashMap<String, String> map = new HashMap<>(2);
-            map.put("participatorId", participator.getParticipatorId().toString());
-            map.put("name", participator.getName());
-            participators.add(map);
-        });
+        {
+            party.getSubjects().forEach(subject -> {
+                HashMap<String, String> map = new HashMap<>(2);
+                map.put("id", subject.getSubjectId().toString());
+                map.put("name", subject.getName());
+                subjects.add(map);
+            });
+        }
+        {
+            participators = new ArrayList<>();
+            party.getParticipators().forEach(participator -> {
+                HashMap<String, String> map = new HashMap<>(2);
+                map.put("id", participator.getParticipatorId().toString());
+                map.put("name", participator.getName());
+                participators.add(map);
+            });
+        }
+
     }
 
     @Override

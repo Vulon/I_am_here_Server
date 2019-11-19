@@ -27,7 +27,7 @@ public class QRParser {
     public String createQrToken(Subject subject, Host host, Date now){
         return Jwts.builder()
                 .setSubject(subject.getSubjectId().toString())
-                .setIssuer(host.getUuid())
+                .setIssuer(host.getHostId().toString())
                 .setIssuedAt(now)
                 .signWith(SignatureAlgorithm.HS256, getEncodedQRTokenKey())
                 .compact();
@@ -37,8 +37,8 @@ public class QRParser {
         return Integer.parseInt(getClaims(qr_token).getSubject());
     }
 
-    public String getHostUUID(String qr_token){
-        return getClaims(qr_token).getIssuer();
+    public Integer getHostID(String qr_token){
+        return Integer.parseInt(getClaims(qr_token).getIssuer());
     }
 
     public Date getDate(String qr_token){

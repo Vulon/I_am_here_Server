@@ -56,6 +56,18 @@ public class Host implements Account {
     inverseJoinColumns = @JoinColumn(name = "subject_id"))
     private Set<Subject> subjects;
 
+    public void addSubject(Subject s){
+        this.subjects.add(s);
+        s.getHosts().add(this);
+    }
+
+    public void removeSubject(Subject s){
+        this.subjects.remove(s);
+        s.getHosts().remove(this);
+    }
+
+
+
     public Host() {
     }
 
@@ -109,9 +121,6 @@ public class Host implements Account {
         return code_word_strings;
     }
 
-    public void addSubject(Subject s){
-        subjects.add(s);
-    }
 
     @Override
     public boolean equals(Object o) {

@@ -16,5 +16,8 @@ public interface ParticipatorRepository extends JpaRepository<Participator, Inte
     @Query
     Participator getByUuidAndPassword(String UUID, String password);
 
+    @Query
+    Participator getByParticipatorId(Integer participator);
+
 
 }

@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ParticipatorVisitTimes implements Serializable {
+    private static final long serialVersionUID = 4879215539218193477L;
+
     public Integer id;
 
     public String name;

@@ -77,21 +77,21 @@ public class Subject {
 
     public void addHost(Host host){
         hosts.add(host);
-        host.getSubjects().add(this);
+       // host.getSubjects().add(this);
     }
 
     public void removeHost(Host host){
         hosts.remove(host);
-        host.getSubjects().remove(this);
+       // host.getSubjects().remove(this);
     }
     public void addParty(Party party){
         this.parties.add(party);
-        party.getSubjects().add(this);
+        //party.getSubjects().add(this);
     }
 
     public void removeParty(Party party){
         this.parties.remove(party);
-        party.getSubjects().remove(this);
+        //party.getSubjects().remove(this);
     }
 
 

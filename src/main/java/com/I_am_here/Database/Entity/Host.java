@@ -58,12 +58,12 @@ public class Host implements Account {
 
     public void addSubject(Subject s){
         this.subjects.add(s);
-        s.getHosts().add(this);
+        //s.getHosts().add(this);
     }
 
     public void removeSubject(Subject s){
         this.subjects.remove(s);
-        s.getHosts().remove(this);
+        //s.getHosts().remove(this);
     }
 
 

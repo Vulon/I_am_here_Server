@@ -63,22 +63,22 @@ public class Party {
 
     public void addParticipator(Participator p){
         this.participators.add(p);
-        p.getParties().add(this);
+        //p.getParties().add(this);
     }
 
     public void removeParticipator(Participator p ){
         this.participators.remove(p);
-        p.getParties().remove(this);
+        //p.getParties().remove(this);
     }
 
     public void addSubject(Subject s){
         this.subjects.add(s);
-        s.getParties().add(this);
+        //s.getParties().add(this);
     }
 
     public void removeSubject(Subject s){
         this.subjects.remove(s);
-        s.getParties().remove(this);
+        //s.getParties().remove(this);
     }
 
     @Override

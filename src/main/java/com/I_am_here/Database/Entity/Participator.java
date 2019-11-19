@@ -68,12 +68,12 @@ public class Participator implements Account {
 
     public void addParty(Party party){
         this.parties.add(party);
-        party.getParticipators().add(this);
+        //party.getParticipators().add(this);
     }
 
     public void removeParty(Party p){
         this.parties.remove(p);
-        p.getParticipators().remove(this);
+        //p.getParticipators().remove(this);
     }
 
     public void addCodeWords(List<String> code_words, Participator_Code_wordRepository repository ){

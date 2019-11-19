@@ -241,35 +241,33 @@ public class WebRestController {
             final Party partyRef = party;
             Set<Subject> subjectSet = new HashSet<>();
             party_data.getSubjects().forEach(stringStringHashMap -> subjectSet.add(subjectRepository.getBySubjectId(Integer.parseInt(stringStringHashMap.get("id")))));
-            subjectSet.forEach(subject -> {
+            System.out.println("Current subjects: " + partyRef.getSubjects().toString());
+            System.out.println("Got list of subjects: " + party_data.getSubjects().toString());
+            subjectSet.parallelStream().forEach(subject -> {
                 if(!partyRef.getSubjects().contains(subject)){
+                    System.out.println("Foreach add " + subject);
                     partyRef.addSubject(subject);
-                    subjectRepository.save(subject);
                 }
             });
-            partyRef.getSubjects().forEach(subject -> {
+            partyRef.getSubjects().parallelStream().forEach(subject -> {
                 if(!subjectSet.contains(subject)){
+                    System.out.println("Foreach delete " + subject);
                     partyRef.removeSubject(subject);
-                    subjectRepository.save(subject);
                 }
             });
-            subjectRepository.flush();
 
             Set<Participator> participatorSet = new HashSet<>();
-            party_data.getParticipators().forEach(stringStringHashMap -> participatorSet.add(participatorRepository.getByParticipatorId(Integer.parseInt(stringStringHashMap.get("id")))));
+            party_data.getParticipators().parallelStream().forEach(stringStringHashMap -> participatorSet.add(participatorRepository.getByParticipatorId(Integer.parseInt(stringStringHashMap.get("id")))));
             participatorSet.forEach(participator -> {
                 if(!partyRef.getParticipators().contains(participator)){
                     partyRef.addParticipator(participator);
-                    participatorRepository.save(participator);
                 }
             });
-            partyRef.getParticipators().forEach(participator -> {
+            partyRef.getParticipators().parallelStream().forEach(participator -> {
                 if(!participatorSet.contains(participator)){
                     partyRef.removeParticipator(participator);
-                    participatorRepository.save(participator);
                 }
             });
-            participatorRepository.flush();
 
             partyRepository.saveAndFlush(partyRef);
 
@@ -365,30 +363,26 @@ public class WebRestController {
             }
             final Subject subjectRef = subject;
 
-            parties.forEach(party -> {
+            parties.parallelStream().forEach(party -> {
                 if(!subjectRef.getParties().contains(party)){
                     subjectRef.addParty(party);
-                    partyRepository.save(party);
                 }
             });
-            subjectRef.getParties().forEach(party -> {
+            subjectRef.getParties().parallelStream().forEach(party -> {
                 if(!parties.contains(party)){
                     subjectRef.removeParty(party);
-                    partyRepository.save(party);
                 }
             });
             partyRepository.flush();
 
-            hosts.forEach(host -> {
+            hosts.parallelStream().forEach(host -> {
                 if(!subjectRef.getHosts().contains(host)){
                     subjectRef.addHost(host);
-                    hostRepository.save(host);
                 }
             });
-            subjectRef.getHosts().forEach(host -> {
+            subjectRef.getHosts().parallelStream().forEach(host -> {
                 if(!hosts.contains(host)){
                     subjectRef.removeHost(host);
-                    hostRepository.save(host);
                 }
             });
             hostRepository.flush();

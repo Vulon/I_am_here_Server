@@ -1,21 +1,19 @@
 package com.I_am_here.TransportableData;
 
 import com.I_am_here.Database.Entity.Participator;
+import com.I_am_here.Database.Entity.Party;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ParticipatorVisitTimes implements Serializable {
-    private static final long serialVersionUID = 4879215539218193477L;
 
+    private static final long serialVersionUID = 4879215539218193477L;
     public Integer id;
 
     public String name;
 
     public Set<Long> visits;
-
 
     public void addVisit(Date date){
         this.visits.add(date.getTime());
@@ -23,6 +21,7 @@ public class ParticipatorVisitTimes implements Serializable {
 
     public ParticipatorVisitTimes() {
     }
+
 
     public ParticipatorVisitTimes(Participator participator) {
         this.id = participator.getParticipatorId();
@@ -56,7 +55,6 @@ public class ParticipatorVisitTimes implements Serializable {
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         return visits != null ? visits.equals(that.visits) : that.visits == null;
-
     }
 
     @Override

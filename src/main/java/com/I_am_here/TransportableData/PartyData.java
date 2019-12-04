@@ -18,14 +18,14 @@ public class PartyData implements Serializable {
 
     private String description;
 
-    private Integer participators_count;
+    private Integer participator_count;
 
     public PartyData(Party party) {
         this.party_id = party.getParty();
         this.party_name = party.getName();
         this.manager_name = party.getManager().getName();
         this.description = party.getDescription();
-        this.participators_count = party.getParticipators().size();
+        this.participator_count = party.getParticipators().size();
     }
 
     public static Set<PartyData> createPartyData(Set<Party> partySet){
@@ -53,7 +53,7 @@ public class PartyData implements Serializable {
             return false;
         if (description != null ? !description.equals(partyData.description) : partyData.description != null)
             return false;
-        return participators_count != null ? participators_count.equals(partyData.participators_count) : partyData.participators_count == null;
+        return participator_count != null ? participator_count.equals(partyData.participator_count) : partyData.participator_count == null;
 
     }
 
@@ -63,7 +63,7 @@ public class PartyData implements Serializable {
         result = 31 * result + party_name.hashCode();
         result = 31 * result + (manager_name != null ? manager_name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (participators_count != null ? participators_count.hashCode() : 0);
+        result = 31 * result + (participator_count != null ? participator_count.hashCode() : 0);
         return result;
     }
 
@@ -103,12 +103,12 @@ public class PartyData implements Serializable {
         this.description = description;
     }
 
-    public Integer getParticipators_count() {
-        return participators_count;
+    public Integer getParticipator_count() {
+        return participator_count;
     }
 
-    public void setParticipators_count(Integer participators_count) {
-        this.participators_count = participators_count;
+    public void setParticipator_count(Integer participator_count) {
+        this.participator_count = participator_count;
     }
 
     @Override
@@ -118,7 +118,7 @@ public class PartyData implements Serializable {
                 ", party_name='" + party_name + '\'' +
                 ", manager_name='" + manager_name + '\'' +
                 ", description='" + description + '\'' +
-                ", participators_count=" + participators_count +
+                ", participator_count=" + participator_count +
                 '}';
     }
 }

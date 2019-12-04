@@ -5,6 +5,8 @@ import com.I_am_here.Database.Entity.Party;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ExtendedPartyData implements Serializable {
     private static final long serialVersionUID = -8333840907270694885L;
@@ -22,6 +24,8 @@ public class ExtendedPartyData implements Serializable {
     private ArrayList<HashMap<String, String>> subjects;
 
     private ArrayList<HashMap<String, String>> participators;
+
+    private Integer participator_count;
 
     public ExtendedPartyData() {
     }
@@ -50,7 +54,17 @@ public class ExtendedPartyData implements Serializable {
                 participators.add(map);
             });
         }
+        participator_count = participators.size();
 
+    }
+
+    public static Set<ExtendedPartyData> createExtendedPartyData(Set<Party> partySet){
+        HashSet<ExtendedPartyData> partyData = new HashSet<>();
+        if(partySet == null){
+            return partyData;
+        }
+        partySet.forEach(party -> partyData.add(new ExtendedPartyData(party)));
+        return partyData;
     }
 
     @Override
@@ -138,6 +152,14 @@ public class ExtendedPartyData implements Serializable {
         this.participators = participators;
     }
 
+    public Integer getParticipator_count() {
+        return participator_count;
+    }
+
+    public void setParticipator_count(Integer participator_count) {
+        this.participator_count = participator_count;
+    }
+
     @Override
     public String toString() {
         return "ExtendedPartyData{" +
@@ -148,6 +170,7 @@ public class ExtendedPartyData implements Serializable {
                 ", code='" + code + '\'' +
                 ", subjects=" + subjects +
                 ", participators=" + participators +
+                ", participator_count=" + participator_count +
                 '}';
     }
 }

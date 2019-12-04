@@ -357,6 +357,8 @@ public class WebRestController {
                 subject.setManager(manager);
                 subject.setBroadcastStart(new Date());
                 subject.setData(subjectData);
+                subject.setParties(new HashSet<>());
+                subject.setHosts(new HashSet<>());
 
             }else{
                 subject.setData(subjectData);

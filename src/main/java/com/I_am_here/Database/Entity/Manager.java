@@ -34,6 +34,9 @@ public class Manager implements Account {
     @Column(name = "refresh_token")
     private String refreshToken;
 
+    @Column(name = "email_secured")
+    private Boolean email_secured;
+
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "manager")
     private Set<Subject> subjects;
@@ -54,6 +57,7 @@ public class Manager implements Account {
         this.refreshToken = refresh_token;
         this.subjects = subjects;
         this.parties = parties;
+        this.email_secured = true;
     }
 
     public void addParty(Party party){
@@ -96,6 +100,15 @@ public class Manager implements Account {
         result = 31 * result + (accessToken != null ? accessToken.hashCode() : 0);
         result = 31 * result + (refreshToken != null ? refreshToken.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public Boolean isEmailSecured() {
+        return email_secured;
+    }
+
+    public void setEmail_secured(Boolean email_secured){
+        this.email_secured = email_secured;
     }
 
     @Override

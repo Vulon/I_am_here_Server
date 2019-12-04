@@ -28,6 +28,9 @@ public class Host implements Account {
     @Column(name = "email", nullable = true)
     private String email;
 
+    @Column(name = "email_secured")
+    private Boolean email_secured;
+
 
 
     @Column(name = "password")
@@ -79,6 +82,7 @@ public class Host implements Account {
         this.accessToken = tokenData.getAccess_token();
         this.refreshToken = tokenData.getRefresh_token();
         this.qrToken = "";
+        email_secured = true;
         this.qrKeyWords = new HashSet<>();
         this.codeWords = new HashSet<>();
         this.subjects = new HashSet<>();
@@ -95,6 +99,7 @@ public class Host implements Account {
         this.qrKeyWords = qrKeyWords;
         this.codeWords = codeWords;
         this.subjects = subjects;
+        this.email_secured = true;
     }
 
     public void addCodeWords(List<String> code_words, Host_Code_wordRepository repository){
@@ -155,6 +160,16 @@ public class Host implements Account {
         result = 31 * result + (refreshToken != null ? refreshToken.hashCode() : 0);
         result = 31 * result + (qrToken != null ? qrToken.hashCode() : 0);
         return result;
+    }
+
+
+    @Override
+    public Boolean isEmailSecured() {
+        return email_secured;
+    }
+
+    public void setEmail_secured(Boolean email_secured){
+        this.email_secured = email_secured;
     }
 
     public Integer getHostId() {

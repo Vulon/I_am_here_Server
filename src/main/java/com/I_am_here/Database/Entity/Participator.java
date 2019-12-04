@@ -32,6 +32,9 @@ public class Participator implements Account {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "email_secured")
+    private Boolean email_secured;
+
 
     @OneToMany(mappedBy = "participator")
     private Set<Code_word_participator> codeWords;
@@ -64,6 +67,7 @@ public class Participator implements Account {
         this.refreshToken = tokenData.getRefresh_token();
         this.visits = new HashSet<>();
         this.parties = new HashSet<>();
+        email_secured = true;
     }
 
     public void addParty(Party party){
@@ -124,6 +128,15 @@ public class Participator implements Account {
         result = 31 * result + (accessToken != null ? accessToken.hashCode() : 0);
         result = 31 * result + (refreshToken != null ? refreshToken.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public Boolean isEmailSecured() {
+        return email_secured;
+    }
+
+    public void setEmail_secured(Boolean email_secured){
+        this.email_secured = email_secured;
     }
 
 

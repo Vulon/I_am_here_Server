@@ -6,3 +6,6 @@ src/main/resources/application*
 target*
 *.properties
 target/classes/application.properties
+*Firebase/*
+*FireBaseMessenger*
+*service-account*

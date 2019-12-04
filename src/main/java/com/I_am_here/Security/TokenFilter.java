@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
@@ -55,8 +56,8 @@ public class TokenFilter extends OncePerRequestFilter {
             httpServletResponse.addHeader("Access-Control-Allow-Method", "POST");
             httpServletResponse.addHeader("Access-Control-Allow-Method", "GET");
             httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
-            httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://localhost");
-            //httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://92.243.164.53");
+//            httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://localhost");
+            httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://92.243.164.53");
             httpServletResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-origin, password, uuid, access_token, refresh_token, www-authenticate");
         }
 
@@ -71,7 +72,9 @@ public class TokenFilter extends OncePerRequestFilter {
                             String access_token = httpServletRequest.getHeader("access_token");
                             if(!filterAccessWebPath(path, access_token)){
                                 if(!filterAccessAppPath(path, access_token)){
-                                    System.out.println("Path was not filtered");
+                                    System.out.println("Path was not filtered: " + new Date());
+                                    System.out.println("Path: " + httpServletRequest.getRequestURI());
+                                    System.out.println("===========================================================");
                                     clearAuth();
                                 }
                             }
@@ -83,7 +86,11 @@ public class TokenFilter extends OncePerRequestFilter {
             e.printStackTrace();
             clearAuth();
         }
-        System.out.println("Filter finished");
+        System.out.println("Filter finished: " + new Date());
+        System.out.println("Path: " + httpServletRequest.getRequestURI());
+        System.out.println("===========================================================");
+
+
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 

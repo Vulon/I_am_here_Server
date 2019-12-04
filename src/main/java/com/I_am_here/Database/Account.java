@@ -7,4 +7,5 @@ public interface Account {
     String getAccessToken();
     String getRefreshToken();
     String getEmail();
+    Boolean isEmailSecured();
 }

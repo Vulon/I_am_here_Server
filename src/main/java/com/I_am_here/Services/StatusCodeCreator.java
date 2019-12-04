@@ -33,6 +33,14 @@ public class StatusCodeCreator {
         return HttpStatus.CONFLICT;
     }
 
-    public HttpStatus subjectNotFound(){return HttpStatus.BAD_REQUEST;}
+    public HttpStatus subjectNotFound(){return entityNotFound(); }
+
+    public HttpStatus partyNotFound(){return entityNotFound(); }
+
+    public HttpStatus notAuthorized(){return HttpStatus.UNAUTHORIZED;}
+
+    public HttpStatus invalidParameter(){return HttpStatus.BAD_REQUEST;}
+
+    public HttpStatus entityNotFound(){return HttpStatus.FAILED_DEPENDENCY;}
 
 }

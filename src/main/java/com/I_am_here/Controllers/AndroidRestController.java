@@ -7,16 +7,15 @@ import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.QRParser;
 import com.I_am_here.Services.SecretDataLoader;
 import com.I_am_here.Services.StatusCodeCreator;
-import com.I_am_here.TransportableData.ParticipatorVisitTimes;
-import com.I_am_here.TransportableData.PartyData;
-import com.I_am_here.TransportableData.SubjectData;
-import com.I_am_here.TransportableData.TokenData;
+import com.I_am_here.TransportableData.*;
+import com.google.api.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -71,6 +70,7 @@ public class AndroidRestController {
     public ResponseEntity<TokenData> register(
             @RequestHeader String UUID,
             @RequestHeader String password,
+            @RequestParam(name = "email_secure", defaultValue = "true", required = false) String email_secure,
             @RequestParam(name = "account_type") String account_type,
             @RequestParam(name = "name", defaultValue = "", required = false) String name,
             @RequestParam(name = "email", defaultValue = "", required = false) String email){
@@ -86,11 +86,13 @@ public class AndroidRestController {
             if(type == TokenParser.ACCOUNT.ACCOUNT_HOST){
                 TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_HOST, now);
                 Host host = new Host(UUID, name, email, password, data);
+                host.setEmail_secured(email_secure.equals("true"));
                 hostRepository.saveAndFlush(host);
                 return new ResponseEntity<>(data, HttpStatus.OK);
             }else if(type == TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR){
                 TokenData data = tokenParser.createTokenData(UUID, password, TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR, now);
                 Participator participator = new Participator(UUID, name, email, password, data);
+                participator.setEmail_secured(email_secure.equals("true"));
                 participatorRepository.saveAndFlush(participator);
 
                 return new ResponseEntity<>(data, HttpStatus.OK);
@@ -387,6 +389,10 @@ public class AndroidRestController {
                 participator.setEmail(data.get("email"));
                 response = response + "Email set to " + data.get("email");
             }
+            if(data.containsKey("email_secured")){
+                participator.setEmail_secured(data.get("email_secured").equals("true"));
+                response = response + "Email Secured: set to " + participator.isEmailSecured();
+            }
             participatorRepository.saveAndFlush(participator);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }catch (Exception e){
@@ -425,6 +431,163 @@ public class AndroidRestController {
             return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
         }
     }
+
+    @GetMapping("/app/participator/get_user_by_id")
+    public ResponseEntity<HashMap> getAccountNameForParticipator(
+            @RequestHeader String access_token,
+            @RequestParam Integer account_id,
+            @RequestParam(name = "account_type") String account_type
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            HashMap<String, String> answer = new HashMap<>();
+            if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
+                Host target = hostRepository.getByHostId(account_id);
+                if(target == null){
+                    answer.put("error", "Host not found for that id");
+                    return new ResponseEntity<>(answer, HttpStatus.OK);
+                }
+                answer.put("name", target.getName());
+                if(!target.isEmailSecured()){
+                    answer.put("email", target.getEmail());
+                }
+                return new ResponseEntity<>(answer, HttpStatus.OK);
+            }else if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name())){
+                Participator target = participatorRepository.getByParticipatorId(account_id);
+                if(target == null){
+                    answer.put("error", "Participator not found for that id");
+                    return new ResponseEntity<>(answer, HttpStatus.OK);
+                }
+                answer.put("name", target.getName());
+                if(!target.isEmailSecured()){
+                    answer.put("email", target.getEmail());
+                }
+                return new ResponseEntity<>(answer, HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(null, statusCodeCreator.invalidParameter());
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null,  statusCodeCreator.serverError());
+        }
+    }
+
+    @PostMapping("/app/participator/leave_party")
+    public ResponseEntity<String> leaveParty(
+            @RequestHeader String access_token,
+            @RequestParam Integer party_id
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            Party party = partyRepository.getByParty(party_id);
+            if(party == null){
+                return new ResponseEntity<>("Party not found", statusCodeCreator.partyNotFound());
+            }
+            participator.removeParty(party);
+            participatorRepository.saveAndFlush(participator);
+            return new ResponseEntity<>("Removed party " + party.getName(), HttpStatus.OK);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error",  statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/participator/get_party_by_id")
+    public ResponseEntity<Set<HashMap<String,String>>> getPartyMembersForParticipator(
+            @RequestHeader String access_token,
+            @RequestParam Integer party_id
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            Party party = partyRepository.getByParty(party_id);
+            if(party == null){
+                return new ResponseEntity<>(null, statusCodeCreator.entityNotFound());
+            }
+            if(participator.getParties().contains(party)){
+                HashSet<HashMap<String,String>> set = new HashSet<HashMap<String,String>>();
+                party.getParticipators().forEach(member -> {
+                    if (!member.getParticipatorId().equals(participator.getParticipatorId())){
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("id", member.getParticipatorId().toString());
+                        map.put("name", member.getName());
+                        set.add(map);
+                    }
+                });
+                return new ResponseEntity<>(set, HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(null, statusCodeCreator.entityNotFound());
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null,  statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/participator/subjects_by_date")
+    public ResponseEntity<Set<SubjectData>> getSubjectsByDateForParticipator(
+            @RequestHeader String access_token,
+            @RequestParam long timestamp
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
+            Date date = new Date();
+            final HashSet<SubjectData> subjectData = new HashSet<>();
+            date.setTime(timestamp);
+            Set<Subject> subjects = subjectRepository.getAllByStartDateBeforeAndFinishDateAfter(date, date);
+            subjects.stream().filter(subject ->
+                subject.getParties().stream().anyMatch(party -> party.getParticipators().contains(participator))
+            ).forEach(subject -> subjectData.add(new SubjectData(subject)));
+
+
+            return new ResponseEntity<>(subjectData, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/participator/visits_by_subject_id")
+    public ResponseEntity<Set<VisitData>> getSubjectsVisits(
+            @RequestHeader String access_token,
+            @RequestParam Integer subject_id
+    ){
+        try{
+            Participator participator = (Participator) getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            Subject subject = subjectRepository.getBySubjectId(subject_id);
+            if(subject == null){
+                return new ResponseEntity<>(null, statusCodeCreator.entityNotFound());
+            }
+            HashSet<VisitData> set = new HashSet<>();
+
+            participator.getVisits().stream().filter(visit -> visit.getSubject().equals(subject)).forEach(visit -> set.add(new VisitData(visit)));
+            return new ResponseEntity<>(set, HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+
+
 
     @GetMapping("/app/host/create_qr_token")
     public ResponseEntity<String> create_qr_token(
@@ -635,7 +798,7 @@ public class AndroidRestController {
         }
     }
     @GetMapping("/app/host/get_party_by_subject_id")
-    public ResponseEntity<Set<PartyData>> getPartiesBySubject(
+    public ResponseEntity<Set<ExtendedPartyData>> getPartiesBySubject(
             @RequestHeader String access_token,
             @RequestParam Integer subject_id
     ){
@@ -645,7 +808,41 @@ public class AndroidRestController {
             if(subject == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
-            return new ResponseEntity<>(PartyData.createPartyData(subject.getParties()), HttpStatus.OK);
+            if (host.getSubjects().contains(subject)){
+                return new ResponseEntity<>(ExtendedPartyData.createExtendedPartyData(subject.getParties()),HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(null, statusCodeCreator.notAuthorized());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/host/subject_by_id")
+    public ResponseEntity<SubjectData> findSubjectById(
+            @RequestHeader String access_token,
+            @RequestParam Integer subject_id
+    ){
+        try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
+            Subject subject = subjectRepository.getBySubjectId(subject_id);
+            if (subject==null){
+                return new ResponseEntity<>(null, statusCodeCreator.subjectNotFound());
+            }
+
+            /* Prevent querying of subjects that host has no access to (in case of http request abuse)*/
+            if (!host.getSubjects().contains(subject)) {
+                return new ResponseEntity<>(null, statusCodeCreator.notAuthorized());
+            }
+            SubjectData subjectData = new SubjectData(subject);
+
+
+            return new ResponseEntity<>(subjectData, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
@@ -670,6 +867,33 @@ public class AndroidRestController {
         }
     }
 
+    @GetMapping("/app/host/party_by_id")
+    public ResponseEntity<ExtendedPartyData> findPartyById(
+            @RequestHeader String access_token,
+            @RequestParam Integer party_id
+    ){
+        try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
+            Party party = partyRepository.getByParty(party_id);
+            if (party==null){
+                return new ResponseEntity<>(null, statusCodeCreator.partyNotFound());
+            }
+
+
+            long count = host.getSubjects().stream().filter(subject -> subject.getParties().contains(party)).count();
+            if(count < 1){
+                return new ResponseEntity<>(null, statusCodeCreator.notAuthorized());
+            }else{return new ResponseEntity<>(new ExtendedPartyData(party), HttpStatus.OK);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
 
 
     @GetMapping("/app/host/credentials")
@@ -709,6 +933,10 @@ public class AndroidRestController {
                 host.setEmail(data.get("email"));
                 response = response + "Email set to " + data.get("email");
             }
+            if(data.containsKey("email_secured")){
+                host.setEmail_secured(data.get("email_secured").equals("true"));
+                response = response + "Email Secured: set to " + host.isEmailSecured();
+            }
             hostRepository.saveAndFlush(host);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }catch (Exception e){
@@ -718,8 +946,8 @@ public class AndroidRestController {
     }
 
 
-    @GetMapping("/app/host/list_of_visit_times")
-    public ResponseEntity<Set<ParticipatorVisitTimes>> getParticipatorVisitTimesForHost(
+    @PostMapping("/app/host/list_of_visit_times")
+    public ResponseEntity<Set<PartyParticipatorVisits>> getParticipatorVisitTimesForHost(
             @RequestHeader String access_token,
             Integer subject_id,
             Long timestamp,
@@ -733,8 +961,7 @@ public class AndroidRestController {
             final Date date = new Date(timestamp);
 
             final Subject subject = subjectRepository.getBySubjectId(subject_id);
-            final Set<Party> parties = new HashSet<>();
-            partySet.forEach(integer -> parties.add(partyRepository.getByParty(integer)));
+
             final Set<Visit> visitSet = visitRepository.getAllByHostAndAndSubject(host, subject);
             if(visitSet == null){
                 return new ResponseEntity<>(new HashSet<>(), HttpStatus.OK);
@@ -744,33 +971,111 @@ public class AndroidRestController {
             calendar.setTime(date);
             calendar.set(Calendar.HOUR_OF_DAY, 0);
             calendar.set(Calendar.MINUTE, 1);
-            HashSet<ParticipatorVisitTimes> visitTimes = new HashSet<>();
+
+            HashSet<PartyParticipatorVisits> partiesData = new HashSet<>();
+            partySet.forEach(integer -> partiesData.add(new PartyParticipatorVisits(partyRepository.getByParty(integer))));
 
             visitSet.stream().filter(visit -> visit.getDate().before(date) && visit.getDate().after(calendar.getTime()))
                     .filter(visit -> {
-                        for(Party p : visit.getParticipator().getParties()){
-                            if(parties.contains(p)){
-                                return true;
-                            }
+                        for (PartyParticipatorVisits p : partiesData) {
+                            for (Party pp : visit.getParticipator().getParties()) {
+                                if (pp.getParty().equals(p.getId())) return true;
+                             }
                         }
                         return false;
                     }).forEach(visit -> {
-                        Integer id = visit.getParticipator().getParticipatorId();
-                        for(ParticipatorVisitTimes vt : visitTimes){
-                            if(vt.id.equals(id)){
-                                vt.addVisit(visit.getDate());
-                                return;
+                        for(PartyParticipatorVisits ppvt : partiesData){
+                            for (Party p : visit.getParticipator().getParties()) {
+                                if (p.getParty().equals(ppvt.getId())) {
+                                    ParticipatorVisitTimes pvt;
+
+                                    if ((pvt = ppvt.findParticipator(visit.getParticipator().getParticipatorId()))!=null) {
+                                        pvt.addVisit(visit.getDate());
+                                        break;
+                                    }
+
+                                    pvt = new ParticipatorVisitTimes(visit.getParticipator());
+                                    pvt.addVisit(visit.getDate());
+                                    ppvt.addParticipatorVisitTime(pvt);
+                                    break;
+                                }
                             }
                         }
-                        ParticipatorVisitTimes pvt = new ParticipatorVisitTimes(visit.getParticipator());
-                        pvt.addVisit(visit.getDate());
-                        visitTimes.add(pvt);
             });
-            return new ResponseEntity<>(visitTimes, HttpStatus.OK);
+
+            return new ResponseEntity<>(partiesData.stream().filter(ppv -> !ppv.getParticipator_visit_times().isEmpty()).collect(Collectors.toSet()),
+                    HttpStatus.OK);
 
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
+        }
+    }
+
+    @GetMapping("/app/host/get_user_by_id")
+    public ResponseEntity<HashMap> getAccountNameForHost(
+            @RequestHeader String access_token,
+            @RequestParam Integer account_id,
+            @RequestParam(name = "account_type") String account_type
+    ){
+        try{
+            Host host = (Host) getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            HashMap<String, String> answer = new HashMap<>();
+            if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_HOST.name())){
+                Host target = hostRepository.getByHostId(account_id);
+                if(target == null){
+                    answer.put("error", "Host not found for that id");
+                    return new ResponseEntity<>(answer, HttpStatus.OK);
+                }
+                answer.put("name", target.getName());
+                if(!target.isEmailSecured()){
+                    answer.put("email", target.getEmail());
+                }
+                return new ResponseEntity<>(answer, HttpStatus.OK);
+            }else if(account_type.equals(TokenParser.ACCOUNT.ACCOUNT_PARTICIPATOR.name())){
+                Participator target = participatorRepository.getByParticipatorId(account_id);
+                if(target == null){
+                    answer.put("error", "Participator not found for that id");
+                    return new ResponseEntity<>(answer, HttpStatus.OK);
+                }
+                answer.put("name", target.getName());
+                if(!target.isEmailSecured()){
+                    answer.put("email", target.getEmail());
+                }
+                return new ResponseEntity<>(answer, HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(null, statusCodeCreator.invalidParameter());
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(null,  statusCodeCreator.serverError());
+        }
+    }
+
+        @PostMapping("/app/host/leave_subject")
+    public ResponseEntity<String> leaveSubject(
+            @RequestHeader String access_token,
+            @RequestParam Integer subject_id
+    ){
+        try{
+            Host host = (Host) getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+            Subject subject = subjectRepository.getBySubjectId(subject_id);
+            if(subject == null){
+                return new ResponseEntity<>("Subject not found", statusCodeCreator.partyNotFound());
+            }
+            host.removeSubject(subject);
+            hostRepository.saveAndFlush(host);
+            return new ResponseEntity<>("Removed subject " + subject.getName(), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error",  statusCodeCreator.serverError());
         }
     }
 

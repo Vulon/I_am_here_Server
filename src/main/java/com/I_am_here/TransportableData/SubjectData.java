@@ -52,9 +52,10 @@ public class SubjectData implements Serializable {
         {
             parties = new ArrayList<>();
             subject.getParties().forEach(party -> {
-                HashMap<String, String> map = new HashMap<>(2);
+                HashMap<String, String> map = new HashMap<>(3);
                 map.put("id", party.getParty().toString());
                 map.put("name", party.getName());
+                map.put("participator_count", String.valueOf(party.getParticipators().size()));
                 parties.add(map);
             });
         }

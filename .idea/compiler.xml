@@ -7,12 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="I_am_here_Server" />
+        <module name="Server 12-05" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="I_am_here_Server" options="-parameters" />
+      <module name="Server 12-05" options="-parameters" />
     </option>
   </component>
 </project>

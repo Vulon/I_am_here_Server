@@ -8,7 +8,6 @@ import com.I_am_here.Services.QRParser;
 import com.I_am_here.Services.SecretDataLoader;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.*;
-import com.google.api.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -364,6 +363,7 @@ public class AndroidRestController {
             HashMap<String, String> data = new HashMap<>();
             data.put("name", participator.getName());
             data.put("email", participator.getEmail());
+            data.put("email_secured", String.valueOf(participator.isEmailSecured()));
             return new ResponseEntity<>(data, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -451,7 +451,7 @@ public class AndroidRestController {
                     return new ResponseEntity<>(answer, HttpStatus.OK);
                 }
                 answer.put("name", target.getName());
-                if(!target.isEmailSecured()){
+                if(target.isEmailSecured()!=null && !target.isEmailSecured()){
                     answer.put("email", target.getEmail());
                 }
                 return new ResponseEntity<>(answer, HttpStatus.OK);
@@ -462,7 +462,7 @@ public class AndroidRestController {
                     return new ResponseEntity<>(answer, HttpStatus.OK);
                 }
                 answer.put("name", target.getName());
-                if(!target.isEmailSecured()){
+                if(target.isEmailSecured()!=null && !target.isEmailSecured()){
                     answer.put("email", target.getEmail());
                 }
                 return new ResponseEntity<>(answer, HttpStatus.OK);
@@ -565,21 +565,32 @@ public class AndroidRestController {
     @GetMapping("/app/participator/visits_by_subject_id")
     public ResponseEntity<Set<VisitData>> getSubjectsVisits(
             @RequestHeader String access_token,
-            @RequestParam Integer subject_id
+            @RequestParam Long timestamp
     ){
         try{
             Participator participator = (Participator) getAccount(access_token);
             if(participator == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
-            Subject subject = subjectRepository.getBySubjectId(subject_id);
-            if(subject == null){
-                return new ResponseEntity<>(null, statusCodeCreator.entityNotFound());
-            }
-            HashSet<VisitData> set = new HashSet<>();
+            Date date = new Date(timestamp);
+            Set<Visit> visitSet = visitRepository.getAllByParticipator(participator);
 
-            participator.getVisits().stream().filter(visit -> visit.getSubject().equals(subject)).forEach(visit -> set.add(new VisitData(visit)));
-            return new ResponseEntity<>(set, HttpStatus.OK);
+            Calendar calendar = GregorianCalendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 1);
+            Date start = calendar.getTime();
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            Date end = calendar.getTime();
+            HashSet<VisitData> visitDataSet = new HashSet<>();
+            visitSet.stream().filter(visit ->
+                visit.getDate().after(start) && visit.getDate().before(end)
+            ).forEach(visit -> {
+                visitDataSet.add(new VisitData(visit));
+            });
+
+            return new ResponseEntity<>(visitDataSet, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(null, statusCodeCreator.serverError());
@@ -908,6 +919,7 @@ public class AndroidRestController {
             HashMap<String, String> data = new HashMap<>();
             data.put("name", host.getName());
             data.put("email", host.getEmail());
+            data.put("email_secured", String.valueOf(host.isEmailSecured()));
             return new ResponseEntity<>(data, HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -1031,7 +1043,7 @@ public class AndroidRestController {
                     return new ResponseEntity<>(answer, HttpStatus.OK);
                 }
                 answer.put("name", target.getName());
-                if(!target.isEmailSecured()){
+                if(target.isEmailSecured()!=null && !target.isEmailSecured()){
                     answer.put("email", target.getEmail());
                 }
                 return new ResponseEntity<>(answer, HttpStatus.OK);
@@ -1042,7 +1054,7 @@ public class AndroidRestController {
                     return new ResponseEntity<>(answer, HttpStatus.OK);
                 }
                 answer.put("name", target.getName());
-                if(!target.isEmailSecured()){
+                if(target.isEmailSecured()!=null && !target.isEmailSecured()){
                     answer.put("email", target.getEmail());
                 }
                 return new ResponseEntity<>(answer, HttpStatus.OK);

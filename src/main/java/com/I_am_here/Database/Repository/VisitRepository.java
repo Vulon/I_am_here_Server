@@ -1,6 +1,7 @@
 package com.I_am_here.Database.Repository;
 
 import com.I_am_here.Database.Entity.Host;
+import com.I_am_here.Database.Entity.Participator;
 import com.I_am_here.Database.Entity.Subject;
 import com.I_am_here.Database.Entity.Visit;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,7 @@ public interface VisitRepository extends JpaRepository<Visit, Integer> {
 
     @Query
     Set<Visit> getAllByHostAndAndSubject(Host host, Subject subject);
+
+    @Query
+    Set<Visit> getAllByParticipator(Participator participator);
 }

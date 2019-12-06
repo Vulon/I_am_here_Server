@@ -209,6 +209,10 @@ public class AndroidRestController {
             @RequestParam String code_word
     ){
         try{
+            Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             Date broadcast_start = Date.from(Instant.now().minusSeconds(secretDataLoader.getPartyBroadcastDuration()));
             Set<Party> partyList = partyRepository.getAllByBroadcastWord(code_word);
             if(partyList == null){
@@ -251,6 +255,9 @@ public class AndroidRestController {
             }
             if(party.getBroadcastWord().equals(code_word)){
                 Participator participator = (Participator)getAccount(access_token);
+                if(participator == null){
+                    return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+                }
                 System.out.println("Found party: " + party);
                 System.out.println("Found Participator: " + participator);
 
@@ -280,6 +287,9 @@ public class AndroidRestController {
     ){
         try{
             Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             return new ResponseEntity<>(PartyData.createPartyData(participator.getParties()), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -625,7 +635,6 @@ public class AndroidRestController {
         }
     }
 
-
     @GetMapping("/app/host/subjects_by_date")
     public ResponseEntity<Set<SubjectData>> getSubjectsByDate(
             @RequestHeader String access_token,
@@ -658,6 +667,11 @@ public class AndroidRestController {
             @RequestParam String code_word
     ){
         try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
             Set<Subject> subjects = subjectRepository.getAllByBroadcastWord(code_word);
             if(subjects == null){
                 return new ResponseEntity<>(new HashSet<>(), HttpStatus.OK);
@@ -768,17 +782,21 @@ public class AndroidRestController {
             @RequestHeader String access_token
     ){
         try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
             Subject subject = subjectRepository.getBySubjectId(subject_id);
             if(subject == null){
                 return new ResponseEntity<>("Not found", statusCodeCreator.userNotFound());
             }
 
             if(subject.getBroadcastWord().equals(code_word)){
-                Host host = (Host)getAccount(access_token);
                 subject.addHost(host);
                 subject = subjectRepository.saveAndFlush(subject);
 
-                host = hostRepository.saveAndFlush(host);
+                hostRepository.saveAndFlush(host);
 
 
                 return new ResponseEntity<>("Joined subject " + subject.getName(), HttpStatus.OK);
@@ -798,6 +816,9 @@ public class AndroidRestController {
     ){
         try{
             Host host = (Host)getAccount(access_token);
+            if(host == null) {
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             HashSet<SubjectData> subjectData = new HashSet<>();
             host.getSubjects().forEach(subject -> {
                 subjectData.add(new SubjectData(subject));
@@ -815,6 +836,9 @@ public class AndroidRestController {
     ){
         try{
             Host host = (Host)getAccount(access_token);
+            if(host == null) {
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             Subject subject = subjectRepository.getBySubjectId(subject_id);
             if(subject == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());

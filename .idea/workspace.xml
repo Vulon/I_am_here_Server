@@ -6,16 +6,12 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a4f4bde8-57a0-460b-84d2-d231bf85ef2e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+    <list default="true" id="a4f4bde8-57a0-460b-84d2-d231bf85ef2e" name="Default Changelist" comment="some requests didn't have user account checks/access token checks, fixed that">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Firebase/FireBaseMessenger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Application.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Repository/VisitRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Database/Repository/VisitRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/PartyData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/TransportableData/PartyData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -104,11 +100,19 @@
       <recent name="D:\GitHub\I_am_here_Server\src\main\resources\META-INF\resources\protected" />
       <recent name="D:\GitHub\I_am_here_Server\src\main\resources\resources" />
     </key>
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.I_am_here.Firebase" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Deya\Desktop\Server 12-05\src" />
       <recent name="D:\GitHub\I_am_here_Server\src\main\resources\META-INF\resources" />
       <recent name="D:\GitHub\I_am_here_Server\src\main\resources\static.js\src" />
     </key>
+  </component>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="mvn clean install" />
+    </option>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -186,8 +190,16 @@
       <workItem from="1574182876217" duration="9635000" />
       <workItem from="1575395229372" duration="4852000" />
       <workItem from="1575484118038" duration="6622000" />
-      <workItem from="1575499608349" duration="5914000" />
+      <workItem from="1575499608349" duration="9501000" />
     </task>
+    <task id="LOCAL-00001" summary="minor changes and bug fixes">
+      <created>1575546359948</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1575546359948</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TodoView">
@@ -212,6 +224,11 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="minor changes and bug fixes" />
+    <MESSAGE value="some requests didn't have user account checks/access token checks, fixed that" />
+    <option name="LAST_COMMIT_MESSAGE" value="some requests didn't have user account checks/access token checks, fixed that" />
   </component>
   <component name="masterDetails">
     <states>

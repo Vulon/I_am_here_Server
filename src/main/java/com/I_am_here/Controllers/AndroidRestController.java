@@ -3,11 +3,14 @@ package com.I_am_here.Controllers;
 import com.I_am_here.Database.Account;
 import com.I_am_here.Database.Entity.*;
 import com.I_am_here.Database.Repository.*;
+import com.I_am_here.Firebase.FireBaseMessenger;
 import com.I_am_here.Security.TokenParser;
 import com.I_am_here.Services.QRParser;
 import com.I_am_here.Services.SecretDataLoader;
 import com.I_am_here.Services.StatusCodeCreator;
 import com.I_am_here.TransportableData.*;
+import com.google.firebase.messaging.FirebaseMessaging;
+import org.apache.http.util.TextUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -209,6 +212,10 @@ public class AndroidRestController {
             @RequestParam String code_word
     ){
         try{
+            Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             Date broadcast_start = Date.from(Instant.now().minusSeconds(secretDataLoader.getPartyBroadcastDuration()));
             Set<Party> partyList = partyRepository.getAllByBroadcastWord(code_word);
             if(partyList == null){
@@ -242,7 +249,9 @@ public class AndroidRestController {
     public ResponseEntity<String> joinParty(
             @RequestParam Integer party_id,
             @RequestParam String code_word,
-            @RequestHeader String access_token
+            @RequestHeader String access_token,
+            @RequestHeader(required = false) String device_token
+
     ){
         try{
             Party party = partyRepository.findByParty(party_id);
@@ -251,6 +260,9 @@ public class AndroidRestController {
             }
             if(party.getBroadcastWord().equals(code_word)){
                 Participator participator = (Participator)getAccount(access_token);
+                if(participator == null){
+                    return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+                }
                 System.out.println("Found party: " + party);
                 System.out.println("Found Participator: " + participator);
 
@@ -262,8 +274,13 @@ public class AndroidRestController {
                 participator = participatorRepository.saveAndFlush(participator);
                 System.out.println("Result participator: " + participator);
 
+                //Firebase
+                String fb = "";
+                if (!TextUtils.isEmpty(device_token)) {
+                    fb = ", " + FireBaseMessenger.subscribeToTopic(device_token, party_id);
+                }
 
-                return new ResponseEntity<>("Joined repository " + party.getName(), HttpStatus.OK);
+                return new ResponseEntity<>("Joined party " + party.getName() + fb, HttpStatus.OK);
             }else{
                 return new ResponseEntity<>("Code word mismatch", statusCodeCreator.codeWordMismatch());
             }
@@ -280,6 +297,9 @@ public class AndroidRestController {
     ){
         try{
             Participator participator = (Participator)getAccount(access_token);
+            if(participator == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             return new ResponseEntity<>(PartyData.createPartyData(participator.getParties()), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
@@ -479,6 +499,7 @@ public class AndroidRestController {
     @PostMapping("/app/participator/leave_party")
     public ResponseEntity<String> leaveParty(
             @RequestHeader String access_token,
+            @RequestHeader(required = false) String device_token,
             @RequestParam Integer party_id
     ){
         try{
@@ -492,7 +513,14 @@ public class AndroidRestController {
             }
             participator.removeParty(party);
             participatorRepository.saveAndFlush(participator);
-            return new ResponseEntity<>("Removed party " + party.getName(), HttpStatus.OK);
+
+            //Firebase
+            String fb = "";
+            if (!TextUtils.isEmpty(device_token)) {
+                fb = ", " + FireBaseMessenger.unsubscribeFromTopic(device_token, party_id);
+            }
+
+            return new ResponseEntity<>("Removed party " + party.getName() + fb, HttpStatus.OK);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -625,6 +653,41 @@ public class AndroidRestController {
         }
     }
 
+    @PostMapping("/app/host/send_announcement")
+    public ResponseEntity<String> sendAnnouncement(
+            @RequestParam Integer subject_id,
+            @RequestParam String message_body,
+            @RequestHeader String access_token
+    ){
+        try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
+            Subject subject = subjectRepository.getBySubjectId(subject_id);
+            if(subject == null){
+                return new ResponseEntity<>("Not found", statusCodeCreator.subjectNotFound());
+            }
+
+            Set<Party> parties = subject.getParties();
+
+            Set<String> partyNames = new HashSet<>();
+            parties.forEach(party -> partyNames.add(party.getName()));
+
+            Set<Integer> partyIds = new HashSet<>();
+            parties.forEach(party -> partyIds.add(party.getParty()));
+
+            return new ResponseEntity<>(
+                    FireBaseMessenger.sendNotification(partyNames, subject.getName(), message_body, partyIds),
+                    HttpStatus.OK);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("Server error", statusCodeCreator.serverError());
+        }
+
+    }
 
     @GetMapping("/app/host/subjects_by_date")
     public ResponseEntity<Set<SubjectData>> getSubjectsByDate(
@@ -634,7 +697,7 @@ public class AndroidRestController {
         try{
             Host host = (Host)getAccount(access_token);
             if(host == null){
-                return new ResponseEntity(null, statusCodeCreator.userNotFound());
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
             }
 
             Date date = new Date();
@@ -658,6 +721,11 @@ public class AndroidRestController {
             @RequestParam String code_word
     ){
         try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
             Set<Subject> subjects = subjectRepository.getAllByBroadcastWord(code_word);
             if(subjects == null){
                 return new ResponseEntity<>(new HashSet<>(), HttpStatus.OK);
@@ -768,17 +836,21 @@ public class AndroidRestController {
             @RequestHeader String access_token
     ){
         try{
+            Host host = (Host)getAccount(access_token);
+            if(host == null){
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
             Subject subject = subjectRepository.getBySubjectId(subject_id);
             if(subject == null){
                 return new ResponseEntity<>("Not found", statusCodeCreator.userNotFound());
             }
 
             if(subject.getBroadcastWord().equals(code_word)){
-                Host host = (Host)getAccount(access_token);
                 subject.addHost(host);
                 subject = subjectRepository.saveAndFlush(subject);
 
-                host = hostRepository.saveAndFlush(host);
+                hostRepository.saveAndFlush(host);
 
 
                 return new ResponseEntity<>("Joined subject " + subject.getName(), HttpStatus.OK);
@@ -798,6 +870,9 @@ public class AndroidRestController {
     ){
         try{
             Host host = (Host)getAccount(access_token);
+            if(host == null) {
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             HashSet<SubjectData> subjectData = new HashSet<>();
             host.getSubjects().forEach(subject -> {
                 subjectData.add(new SubjectData(subject));
@@ -815,6 +890,9 @@ public class AndroidRestController {
     ){
         try{
             Host host = (Host)getAccount(access_token);
+            if(host == null) {
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
             Subject subject = subjectRepository.getBySubjectId(subject_id);
             if(subject == null){
                 return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
@@ -866,6 +944,10 @@ public class AndroidRestController {
     ){
         try{
             Host host = (Host)getAccount(access_token);
+            if (host==null) {
+                return new ResponseEntity<>(null, statusCodeCreator.userNotFound());
+            }
+
             HashSet<PartyData> partyData = new HashSet<>();
             host.getSubjects().forEach(subject -> {
                 partyData.addAll(PartyData.createPartyData(subject.getParties()));

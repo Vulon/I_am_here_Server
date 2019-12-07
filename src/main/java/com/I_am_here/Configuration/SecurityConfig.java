@@ -34,7 +34,7 @@ public class SecurityConfig{
         }
 
         @Override
-        public void configure(WebSecurity web) throws Exception {
+        public void configure(WebSecurity web) {
             //web.ignoring().antMatchers("/app/register", "/app/login", "/check");
         }
 
@@ -66,7 +66,7 @@ public class SecurityConfig{
         }
 
         @Override
-        public void configure(WebSecurity web) throws Exception {
+        public void configure(WebSecurity web) {
             //web.ignoring().antMatchers("/web/register", "/web/login", "/check");
         }
 

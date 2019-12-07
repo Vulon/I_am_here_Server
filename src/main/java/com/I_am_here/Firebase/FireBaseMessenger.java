@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Set;
 
 public class FireBaseMessenger {
     private static final String FILE_DIR = "src/resources/service-account.json";
@@ -35,13 +36,14 @@ public class FireBaseMessenger {
      *
      * @throws FirebaseMessagingException .
      */
-    public void sendNotification(String messageTitle, String messageBody, ArrayList<String> topicIds) throws FirebaseMessagingException {
+    public static String sendNotification(Set<String> messageTitleParty, String messageTitleSubject, String messageBody,
+                                        Set<Integer> topicIds) throws FirebaseMessagingException {
         AndroidConfig notificationConfig =
                 AndroidConfig.builder()
                         .setTtl(3600 * 1000 * 24) // 1 day in milliseconds
                         .setPriority(AndroidConfig.Priority.NORMAL)
                         .setNotification(AndroidNotification.builder()
-                                .setTitle(messageTitle)
+                                .setTitle(String.format("%s - %s", messageTitleParty, messageTitleSubject))
                                 .setBody(messageBody)
 //                                .setIcon("stock_ticker_update")
 //                                .setColor("#f45342")
@@ -49,16 +51,16 @@ public class FireBaseMessenger {
                         .build();
 
         ArrayList<Message> messages = new ArrayList<>();
-        for (String topic : topicIds) {
+        for (Integer topic : topicIds) {
             messages.add(
                     Message.builder()
                             .setAndroidConfig(notificationConfig)
-                            .setTopic(topic)
+                            .setTopic(String.valueOf(topic))
                             .build());
         }
 
         BatchResponse response = FirebaseMessaging.getInstance().sendAll(messages);
-        System.out.println(response.getSuccessCount() + " messages were sent successfully");
+        return response.getSuccessCount() + " messages were sent successfully";
     }
 
     /**
@@ -68,13 +70,13 @@ public class FireBaseMessenger {
      * @param topicId String of the topic to subscribe to.
      * @throws FirebaseMessagingException .
      */
-    public void subscribeToTopic(String registrationToken, String topicId) throws FirebaseMessagingException {
+    public static String subscribeToTopic(String registrationToken, Integer topicId) throws FirebaseMessagingException {
         // Subscribe the devices corresponding to the registration tokens to the topic.
         TopicManagementResponse response =
                 FirebaseMessaging.getInstance().subscribeToTopic(
-                        Collections.singletonList(registrationToken), topicId);
+                        Collections.singletonList(registrationToken), String.valueOf(topicId));
 
-        System.out.println(response.getSuccessCount() + " tokens were subscribed successfully");
+        return response.getSuccessCount() + " tokens were subscribed successfully";
     }
 
 
@@ -85,12 +87,12 @@ public class FireBaseMessenger {
      * @param topicId String of the topic to unsubscribe from.
      * @throws FirebaseMessagingException .
      */
-    public void unsubscribeFromTopic(String registrationToken, String topicId) throws FirebaseMessagingException {
+    public static String unsubscribeFromTopic(String registrationToken, Integer topicId) throws FirebaseMessagingException {
         // Unsubscribe the devices corresponding to the registration tokens from the topic.
         TopicManagementResponse response =
                 FirebaseMessaging.getInstance().unsubscribeFromTopic(
-                        Collections.singletonList(registrationToken), topicId);
+                        Collections.singletonList(registrationToken), String.valueOf(topicId));
 
-        System.out.println(response.getSuccessCount() + " tokens were unsubscribed successfully");
+        return response.getSuccessCount() + " tokens were unsubscribed successfully";
     }
 }

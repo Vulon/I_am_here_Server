@@ -6,12 +6,12 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a4f4bde8-57a0-460b-84d2-d231bf85ef2e" name="Default Changelist" comment="some requests didn't have user account checks/access token checks, fixed that">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Firebase/FireBaseMessenger.java" afterDir="false" />
+    <list default="true" id="a4f4bde8-57a0-460b-84d2-d231bf85ef2e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Configuration/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Configuration/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/I_am_here/Firebase/FireBaseMessenger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/I_am_here/Firebase/FireBaseMessenger.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -190,7 +190,7 @@
       <workItem from="1574182876217" duration="9635000" />
       <workItem from="1575395229372" duration="4852000" />
       <workItem from="1575484118038" duration="6622000" />
-      <workItem from="1575499608349" duration="9501000" />
+      <workItem from="1575499608349" duration="19211000" />
     </task>
     <task id="LOCAL-00001" summary="minor changes and bug fixes">
       <created>1575546359948</created>
@@ -199,7 +199,14 @@
       <option name="project" value="LOCAL" />
       <updated>1575546359948</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="some requests didn't have user account checks/access token checks, fixed that">
+      <created>1575645806670</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1575645806670</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TodoView">
@@ -229,6 +236,22 @@
     <MESSAGE value="minor changes and bug fixes" />
     <MESSAGE value="some requests didn't have user account checks/access token checks, fixed that" />
     <option name="LAST_COMMIT_MESSAGE" value="some requests didn't have user account checks/access token checks, fixed that" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java</url>
+          <line>277</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/I_am_here/Controllers/AndroidRestController.java</url>
+          <line>680</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="masterDetails">
     <states>
